@@ -140,7 +140,7 @@
 
         // redirect to pin if login more than 1 hour
 
-        if (dayjs(user.LoginAt).isAfter(dayjs().add(1, "hour"))) {
+        if (dayjs().isAfter(dayjs(user.LoginAt).add(1, "hour"))) {
             console.log("need pin");
             return goto("/pin");
         }
