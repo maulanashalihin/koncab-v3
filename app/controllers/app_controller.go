@@ -68,7 +68,7 @@ func (u *AppController) SaveSite(c *fiber.Ctx) error {
 
 	if Env == "production" {
 
-		filePath := "/etc/caddy/koncab-config/" + payload.Domain
+		filePath := "/etc/caddy/koncab-sites/" + payload.Domain
 
 		content := []byte(fmt.Sprintf("%s {\n\troot * /home/koncab/koncab-v3/build\n\ttry_files {path}.html\n\tfile_server\n}\n", payload.Domain))
 

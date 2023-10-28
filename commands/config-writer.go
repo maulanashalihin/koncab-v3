@@ -12,7 +12,7 @@ func main() {
 	}
 
 	domain := os.Args[1]
-	filePath := "/etc/caddy/koncab-config/" + domain
+	filePath := "/etc/caddy/koncab-sites/" + domain
 
 	content := []byte(fmt.Sprintf("%s {\n\troot * /home/koncab/koncab-v3/build\n\ttry_files {path}.html\n\tfile_server\n}\n", domain))
 

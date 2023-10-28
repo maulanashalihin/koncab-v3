@@ -1,9 +1,7 @@
 package main
 
 import (
-	"crypto/tls"
 	"log"
-	"net"
 	"os"
 
 	"github.com/gofiber/fiber/v2"
@@ -80,13 +78,7 @@ func main() {
 
 		keyFile := "/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/portal.koncab.my.id/portal.koncab.my.id.key"
 
-		ln, _ := net.Listen("tcp", ":3000")
-
-		cer, _ := tls.LoadX509KeyPair(certFile, keyFile)
-
-		ln = tls.NewListener(ln, &tls.Config{Certificates: []tls.Certificate{cer}})
-
-		app.Listener(ln)
+		app.ListenTLS(":3000", certFile, keyFile)
 
 	} else {
 
