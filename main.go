@@ -23,7 +23,7 @@ func main() {
 
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*", // You can change this to the origin you want to allow
-		AllowHeaders: "Origin, Content-Type, Accept,Accept-Encoding,Accept-Language,Connection,Host,Sec-Fetch-Dest,Sec-Fetch-Mode,Sec-Fetch-Site, Authorization, User-Agent, Referer",
+		AllowHeaders: "Origin, Content-Type, Accept,Accept-Encoding,Accept-Language,Upgrade-Insecure-Requests,Connection,Host,Sec-Fetch-Dest,Sec-Fetch-Mode,Sec-Fetch-Site,Sec-Fetch-User, Authorization, User-Agent, Referer",
 	}))
 
 	app.Get("/", func(c *fiber.Ctx) error {
