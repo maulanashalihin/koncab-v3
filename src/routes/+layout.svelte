@@ -5,7 +5,7 @@
   import { dev } from "$app/environment"; 
     import { goto } from "$app/navigation";
 
-  const url = dev ? "http://localhost:3000" : "https://api.koncab.my.id:3000";
+  const url = dev ? "http://localhost:3000" : "https://portal.koncab.my.id:3000";
 
   axios.interceptors.request.use(
     (config) => {
