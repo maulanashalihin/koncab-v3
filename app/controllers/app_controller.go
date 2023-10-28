@@ -102,8 +102,6 @@ func (u *AppController) AllowRegister(c *fiber.Ctx) error {
 	// Count the users
 	data.Model(&models.User{}).Count(&userCount)
 
-	fmt.Print(userCount)
-
 	if userCount > 0 {
 		return c.SendStatus(fiber.StatusUnauthorized)
 	}
