@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -69,6 +70,19 @@ func main() {
 
 	app.Delete("/auth/admin/:id", UserController.DeleteAdmin)
 
-	app.Listen(":3000")
+	Env := os.Getenv("APP_ENV")
+
+	if Env == "production" {
+
+		certFile := "/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/portal.koncab.my.id/portal.koncab.my.id.crt"
+
+		keyFile := "/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/portal.koncab.my.id/portal.koncab.my.id.key"
+
+		app.ListenTLS(":3000", certFile, keyFile)
+
+	} else {
+
+		app.Listen(":3000")
+	}
 
 }
