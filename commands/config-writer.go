@@ -14,7 +14,7 @@ func main() {
 	domain := os.Args[1]
 	filePath := "/etc/caddy/koncab-config/" + domain
 
-	content := []byte(fmt.Sprintf("%s {\n\troot * /home/koncab/koncab-v3/build\n\tfile_server\n}\n", domain))
+	content := []byte(fmt.Sprintf("%s {\n\troot * /home/koncab/koncab-v3/build\n\ttry_files {path}.html\n\tfile_server\n}\n", domain))
 
 	err := os.WriteFile(filePath, content, 0644)
 	if err != nil {

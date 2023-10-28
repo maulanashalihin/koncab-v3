@@ -68,13 +68,24 @@ func (u *AppController) SaveSite(c *fiber.Ctx) error {
 
 	if Env == "production" {
 
-		cmd_config := exec.Command("sudo ./config-writer " + payload.Domain)
+		filePath := "/etc/caddy/koncab-config/" + payload.Domain
 
-		cmd_config.Run()
+		content := []byte(fmt.Sprintf("%s {\n\troot * /home/koncab/koncab-v3/build\n\ttry_files {path}.html\n\tfile_server\n}\n", payload.Domain))
 
-		cmd_restart := exec.Command("sudo systemctl reload caddy")
+		err := os.WriteFile(filePath, content, 0644)
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error": result.Error.Error(),
+			})
+		}
 
-		cmd_restart.Run()
+		cmdRestart := exec.Command("sudo", "systemctl", "reload", "caddy")
+
+		if err := cmdRestart.Run(); err != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
 
 	}
 
