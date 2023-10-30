@@ -319,7 +319,7 @@
             "BOBOT NILAI": "10",
          },
          {
-            ITEM: "Tabloid",
+            ITEM: "Rata Tabloid",
             DATA: rata2_tabloid,
             DISPLAY_DATA: rata2_tabloid + " Eksemplar",
             SATUAN: "Eksemplar",
@@ -402,13 +402,11 @@
          total_kontak = total_kontak + item.kontak_index;
       }
 
-      let rata2_kursus = 0,
-         rata2_kontrol = 0,
-         rata2_kontak = 0;
+   
 
-        rata2_kursus = Math.ceil((total_kursus / presences.length) * 100);
-        rata2_kontrol = Math.ceil((total_kontrol / presences.length) * 100);
-        rata2_kontak = Math.ceil((total_kontak / presences.length) * 100);
+        const rata2_kursus = Math.ceil((total_kursus / presences.length) * 100);
+        const rata2_kontrol = Math.ceil((total_kontrol / presences.length) * 100);
+        const rata2_kontak = Math.ceil((total_kontak / presences.length) * 100);
 
       const presence_weeks = await db.presence_week
          .where("tanggal")
@@ -538,32 +536,32 @@
       table_data = [
          {
             ITEM: "Kehadiran Kursus",
-            DATA: rata2_kursus,
-            DISPLAY_DATA: rata2_kursus + "%",
+            DATA: rata2_kursus || 0,
+            DISPLAY_DATA: (rata2_kursus || 0) + "%",
             SATUAN: "orang",
             PENJELASAN:
                "Rata2 jumlah pemuda yang hadir kursus tiap pekan. Diinput dalam bentuk angka bulat, bukan desimal",
          },
          {
             ITEM: "Kontrol",
-            DATA: "",
-            DISPLAY_DATA: rata2_kontrol + "%",
+            DATA: rata2_kontrol || 0,
+            DISPLAY_DATA: (rata2_kontrol || 0) + "%",
             SATUAN: "orang",
             PENJELASAN:
                "Rata2 jumlah pemuda yang dikontrol tiap pekan. Diinput dalam bentuk angka bulat, bukan desimal",
          },
          {
             ITEM: "Kontak",
-            DATA: "",
-            DISPLAY_DATA: rata2_kontak + "%",
+            DATA: (rata2_kontak || 0),
+            DISPLAY_DATA: (rata2_kontak || 0) + "%",
             SATUAN: "orang",
             PENJELASAN:
                "Rata2 jumlah pemuda yg lakukan kontak tiap pekan. Diinput dalam bentuk angka bulat, bukan desimal",
          },
          {
             ITEM: "Laporan Guru",
-            DATA: rata2_laporan,
-            DISPLAY_DATA: rata2_laporan + "%",
+            DATA: rata2_laporan || 0,
+            DISPLAY_DATA: (rata2_laporan || 0) + "%",
             SATUAN: "kelas",
             PENJELASAN:
                "Rata2 jumlah laporan guru yang masuk tiap pekan. Diinput dalam bentuk angka bulat, bukan desimal",
