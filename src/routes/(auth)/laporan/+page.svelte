@@ -402,9 +402,13 @@
          total_kontak = total_kontak + item.kontak_index;
       }
 
-      const rata2_kursus = Math.ceil((total_kursus / presences.length) * 100);
-      const rata2_kontrol = Math.ceil((total_kontrol / presences.length) * 100);
-      const rata2_kontak = Math.ceil((total_kontak / presences.length) * 100);
+      let rata2_kursus = 0,
+         rata2_kontrol = 0,
+         rata2_kontak = 0;
+
+        rata2_kursus = Math.ceil((total_kursus / presences.length) * 100);
+        rata2_kontrol = Math.ceil((total_kontrol / presences.length) * 100);
+        rata2_kontak = Math.ceil((total_kontak / presences.length) * 100);
 
       const presence_weeks = await db.presence_week
          .where("tanggal")
@@ -534,7 +538,7 @@
       table_data = [
          {
             ITEM: "Kehadiran Kursus",
-            DATA: "",
+            DATA: rata2_kursus,
             DISPLAY_DATA: rata2_kursus + "%",
             SATUAN: "orang",
             PENJELASAN:
