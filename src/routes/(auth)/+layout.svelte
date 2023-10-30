@@ -8,8 +8,7 @@
 
     export let path = "/pemuda";
 
-    let active_dropdown_menu = "";
-    let enter_menu_counter = 0;
+    let active_dropdown_menu = ""; 
     let active_mobile_menu = location.pathname;
     let active_menu_mobile = false;
     let menus = [

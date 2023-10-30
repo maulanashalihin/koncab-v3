@@ -1,6 +1,7 @@
 <script>
     import Modal from "../../../Components/Modal.svelte"; 
     import { generateUUID } from "../../../Components/helper";
+    import dayjs from "dayjs";
     import { Log, db, pubsub } from "../../../Database/schema";
  
     let kontak = [];
@@ -36,7 +37,9 @@
           db.kontak.put(active_kontak);
        } else {
           active_kontak.id = generateUUID();
+          active_kontak.createdAt = dayjs().format("YYYY-MM-DD");
           db.kontak.add(active_kontak);
+          
        }
        Log("kontak", active_kontak);
        editkontakModal = false;
@@ -108,7 +111,7 @@
                       >{item.pengontak || "-"}</td
                    >
                    <td class="whitespace-nowrap px-4 py-2 text-gray-700"
-                      > {item.note}</td
+                      > {item.note || ''}</td
                    >
                    <td class="whitespace-nowrap px-4 py-2 text-gray-700">
                       <button
@@ -158,7 +161,9 @@
         >
            <option value="Target">Target</option>
            <option value="Prospek">Prospek</option>
-           <option value="Deal">Deal</option>
+           <option value="Deal">Deal (Ikut Training)</option>
+           <option value="Sukses">Sukses (Jadi HU)</option>
+           <option value="Mundur">Mundur</option>
         </select>
      </div>
      <div class="space-y-1">

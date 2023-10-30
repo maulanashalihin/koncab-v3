@@ -3,6 +3,7 @@
     import dayjs from "dayjs";
     import { Log, db, pubsub } from "../../../Database/schema";
     import "dayjs/locale/id"; 
+   import { generateRandomString } from "../../../Components/helper";
 
 dayjs.locale("id"); 
     let ku = [];
@@ -25,8 +26,8 @@ dayjs.locale("id");
     function saveku() {
        active_ku.peserta = active_ku.list_peserta.length;
        active_ku.bulan = dayjs(active_ku.tanggal).format("MMMM YYYY");
-       active_ku.id = dayjs(active_ku.tanggal).format("YYYYMM");
-       console.log(active_ku);
+       active_ku.id = dayjs(active_ku.tanggal).format("YYYY-MM-DD-")+generateRandomString(5);
+      
  
        db.ku.put(active_ku);
  
@@ -134,6 +135,19 @@ dayjs.locale("id");
              id="tanggal"
           />
        </div>
+       <div class="space-y-1">
+         <label for="jenis" class="font-medium">Jenis</label>
+         <select
+            required
+            bind:value={active_ku.jenis}
+            class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
+            id="jenis"
+         >
+            {#each ["Offline","Online"] as item}
+               <option value={item}>{item}</option>
+            {/each}
+         </select>
+      </div>
        <div class="space-y-1">
         <label for="pembicara" class="font-medium">Pembicara</label>
         <input

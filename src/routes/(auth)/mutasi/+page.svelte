@@ -35,7 +35,7 @@
           db.mutasi.put(active_mutasi);
        } else {
           active_mutasi.id = generateUUID();
-          active_mutasi.createdAt = new Date().toISOString();
+          active_mutasi.createdAt = dayjs().format("YYYY-MM-DD");
           db.mutasi.add(active_mutasi);
        }
        Log("mutasi", active_mutasi);

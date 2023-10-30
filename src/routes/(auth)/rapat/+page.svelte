@@ -38,7 +38,7 @@
           db.rapat.put(active_rapat);
        } else {
           active_rapat.id = generateUUID();
-          active_rapat.createdAt = new Date().toISOString();
+          active_rapat.createdAt = dayjs().format("YYYY-MM-DD");
           db.rapat.add(active_rapat);
        }
        Log("rapat", active_rapat);

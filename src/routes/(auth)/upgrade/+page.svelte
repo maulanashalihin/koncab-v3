@@ -35,7 +35,7 @@
           db.upgrade.put(active_upgrade);
        } else {
           active_upgrade.id = generateUUID();
-          active_upgrade.createdAt = new Date().toISOString();
+          active_upgrade.createdAt = dayjs().format("YYYY-MM-DD");
           db.upgrade.add(active_upgrade);
        }
        Log("upgrade", active_upgrade);

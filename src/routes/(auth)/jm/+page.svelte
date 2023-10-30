@@ -32,7 +32,9 @@ dayjs.locale("id");
        active_jm.peserta = active_jm.list_peserta.length;
        active_jm.bulan = dayjs(active_jm.tanggal).format("MMMM YYYY");
        active_jm.id = dayjs(active_jm.tanggal).format("YYYYMM");
-       console.log(active_jm);
+       active_jm.persentage = Math.round(
+         (active_jm.peserta / peserta.length) * 100
+      );
  
        db.jm.put(active_jm);
  

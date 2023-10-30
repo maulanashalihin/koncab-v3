@@ -30,6 +30,9 @@
 
    function saveHs() {
       active_hs.peserta = active_hs.list_peserta.length;
+      active_hs.persentage = Math.ceil(
+         (active_hs.peserta / peserta.length) * 100
+      );
       active_hs.bulan = dayjs(active_hs.tanggal).format("MMMM YYYY");
       active_hs.id = dayjs(active_hs.tanggal).format("YYYYMM");
 
