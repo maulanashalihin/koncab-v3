@@ -101,19 +101,39 @@
    async function LoadPresence() {
       const id = dayjs().week() + ":" + dayjs().year() + ":" + active_group.id;
 
+        selected_peserta = peserta.filter(
+                                    (i) => i.group_id == active_group.id
+                                 );
+
       presence_week = (await db.presence_week.where({ id: id }).first()) || {};
       presence_week.status = "Terlaksana";
       presence_week.halaman = active_group.halaman;
       presence_week.guru = active_group.guru;
       presence_week.kalimat = active_group.kalimat;
       presence_week.group_id = active_group.id;
-      presence_week.modul = active_group.modul;
-      presence_week.presence =
-         presence_week.presence &&
-         presence_week.presence.length &&
-         presence_week.presence.length == selected_peserta.length
-            ? presence_week.presence
-            : selected_peserta;
+      presence_week.modul = active_group.modul; 
+
+      
+      if(!presence_week.presence || presence_week.presence.length == 0 || presence_week.presence.length != selected_peserta.length)
+      {
+         presence_week.presence = selected_peserta.map((item) => {
+         return {
+            id: presence_week.id + ":" + item.group_id + ":" + item.id,
+            name: item.name,
+            present: false,
+            ontime: false,
+            kontak: false,
+            kontrol: false,
+            buletin_fisik: 0,
+            buletin_digital: 0,
+            leaflet: 0,
+         };
+      });
+      }
+     
+
+
+
       presence_week.meeting_time = 120;
       presence_week.tanggal = dayjs().format("YYYY-MM-DD");
       presence_week.id = id;
@@ -393,9 +413,7 @@
                               on:click={() => {
                                  active_group = item;
                                  presentModal = true;
-                                 selected_peserta = peserta.filter(
-                                    (i) => i.group_id == item.id
-                                 );
+                               
                                  LoadPresence();
                               }}
                               class="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded"
