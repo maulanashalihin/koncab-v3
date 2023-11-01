@@ -41,7 +41,7 @@
          }
 
          db.hu.put(active_hu);
-         Log("hu", active_hu);
+        
 
          if (action == "HU ke CP") {
             const upgrade_data = {
