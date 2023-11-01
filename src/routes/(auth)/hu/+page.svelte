@@ -35,11 +35,13 @@
 
    function savehu() {
       if (active_hu.id) {
+
          if (is_mundur) {
             active_hu.status = "Mundur";
          }
 
          db.hu.put(active_hu);
+         Log("hu", active_hu);
 
          if (action == "HU ke CP") {
             const upgrade_data = {
