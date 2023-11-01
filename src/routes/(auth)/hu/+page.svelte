@@ -74,7 +74,7 @@
             Log("peserta", new_Peserta);
          }
       } else {
-         active_hu.id = generateUUID();
+         active_hu.id = active_hu.name;
          db.hu.add(active_hu);
 
          if (action == "HU Baru") {
