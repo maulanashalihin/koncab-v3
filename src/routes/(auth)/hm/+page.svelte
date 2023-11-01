@@ -72,8 +72,6 @@
          (item) => item.id == active_group.guru_id
       ).name;
 
-     
-
       if (active_group.id) {
          db.groups.put(active_group);
 
@@ -102,7 +100,7 @@
                await db.peserta.update(item.value, {
                   group_id: active_group.id,
                   modul: active_group.modul,
-                  
+
                   halaman: active_group.halaman,
                   kalimat: active_group.kalimat,
                });
@@ -181,7 +179,8 @@
    }
 
    async function savePresence() {
-      if (presence_week.status == "Terlaksana") {
+      if (presence_week.tanggal > active_group.last_meet) {
+         
          active_group.last_meet = presence_week.tanggal;
          active_group.halaman = presence_week.halaman;
          active_group.kalimat = presence_week.kalimat;
@@ -199,7 +198,9 @@
          await db.groups.put(active_group);
 
          Log("groups", active_group);
+      }
 
+      if (presence_week.status == "Terlaksana") {
          presence_week.presence_percentage =
             (presences.filter((item) => item.present).length /
                presences.length) *
@@ -530,126 +531,125 @@
                {#each ["Ahad", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"] as day}
                   <div>
                      <div class="text-lg border-b pb-2">
-                       {day}
+                        {day}
                      </div>
-                     {#if groups.filter(item=>(item.hari == day)).length}
-                        
-                     
-                     <table
-                        class="min-w-full divide-y-2 divide-gray-200 bg-white text-sm"
-                     >
-                        <thead class="ltr:text-left rtl:text-right">
-                           <tr>
-                              <th
-                                 class="text-left px-4 py-2 font-medium text-gray-900"
-                              >
-                                 Guru
-                              </th>
-
- <th
-                                 class="text-left px-4 py-2 font-medium text-gray-900"
-                              >
-                                 Jam
-                              </th>
-                              <th
-                                 class="text-left px-4 py-2 font-medium text-gray-900"
-                              >
-                                 Modul
-                              </th>
-                              <th
-                                 class="text-left px-4 py-2 font-medium text-gray-900"
-                              >
-                                 Halaman
-                              </th>
-                              <th
-                                 class="text-left px-4 py-2 font-medium text-gray-900"
-                              >
-                                 Pertemuan Terakhir
-                              </th>
-                              <th
-                                 class="text-left px-4 py-2 font-medium text-gray-900"
-                              >
-                                 Action
-                              </th>
-                           </tr>
-                        </thead>
-
-                        <tbody class="divide-y divide-gray-200">
-                           {#each groups.filter(item=>(item.hari == day)).sort((a, b) => a.jam - b.jam)
-                              as item}
+                     {#if groups.filter((item) => item.hari == day).length}
+                        <table
+                           class="min-w-full divide-y-2 divide-gray-200 bg-white text-sm"
+                        >
+                           <thead class="ltr:text-left rtl:text-right">
                               <tr>
-                                 <td
-                                    class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                                 <th
+                                    class="text-left px-4 py-2 font-medium text-gray-900"
                                  >
-                                    {item.guru}
-                                 </td>
-                                 <td
-                                 class="whitespace-nowrap px-4 py-2 text-gray-700"
-                                 >{item.jam}</td
-                              >
-                                 <td
-                                    class="whitespace-nowrap px-4 py-2 text-gray-700"
-                                    >{item.modul}</td
-                                 >
-                                 <td
-                                    class="whitespace-nowrap px-4 py-2 text-gray-700"
-                                    >{item.halaman}
-                                    {item.kalimat
-                                       ? `(${item.kalimat})`
-                                       : ""}</td
-                                 >
-                                 <td
-                                    class="whitespace-nowrap px-4 py-2 text-gray-700"
-                                    >{item.last_meet || "-"}</td
-                                 >
-                                 <td
-                                    class="whitespace-nowrap px-4 py-2 text-gray-700"
-                                 >
-                                    <button
-                                       type="button"
-                                       on:click={() => {
-                                          active_group = item;
-                                          editGroupModal = true;
+                                    Guru
+                                 </th>
 
-                                          selected_peserta = peserta
-                                             .filter(
-                                                (i) => i.group_id == item.id
-                                             )
-                                             .map((item) => ({
-                                                label: item.name,
-                                                value: item.id,
-                                             }));
-                                       }}
-                                       class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                                       >Edit</button
-                                    >
-
-                                    <button
-                                       type="button"
-                                       on:click={() => {
-                                          active_group = item;
-                                          presentModal = true;
-
-                                          LoadPresence();
-                                       }}
-                                       class="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded"
-                                       >+ Absen</button
-                                    >
-                                    <button
-                                       type="button"
-                                       on:click={() => {
-                                          active_group = item;
-                                          historyModal = true;
-                                          loadHistory();
-                                       }}
-                                       class="bg-gray-100 hover:bg-gray-300 text-gray-500 font-bold py-2 px-4 rounded"
-                                       >History</button
-                                    >
-                                 </td>
+                                 <th
+                                    class="text-left px-4 py-2 font-medium text-gray-900"
+                                 >
+                                    Jam
+                                 </th>
+                                 <th
+                                    class="text-left px-4 py-2 font-medium text-gray-900"
+                                 >
+                                    Modul
+                                 </th>
+                                 <th
+                                    class="text-left px-4 py-2 font-medium text-gray-900"
+                                 >
+                                    Halaman
+                                 </th>
+                                 <th
+                                    class="text-left px-4 py-2 font-medium text-gray-900"
+                                 >
+                                    Pertemuan Terakhir
+                                 </th>
+                                 <th
+                                    class="text-left px-4 py-2 font-medium text-gray-900"
+                                 >
+                                    Action
+                                 </th>
                               </tr>
-                           {/each}
-                        </tbody>
-                     </table>
+                           </thead>
+
+                           <tbody class="divide-y divide-gray-200">
+                              {#each groups
+                                 .filter((item) => item.hari == day)
+                                 .sort((a, b) => a.jam - b.jam) as item}
+                                 <tr>
+                                    <td
+                                       class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                                    >
+                                       {item.guru}
+                                    </td>
+                                    <td
+                                       class="whitespace-nowrap px-4 py-2 text-gray-700"
+                                       >{item.jam}</td
+                                    >
+                                    <td
+                                       class="whitespace-nowrap px-4 py-2 text-gray-700"
+                                       >{item.modul}</td
+                                    >
+                                    <td
+                                       class="whitespace-nowrap px-4 py-2 text-gray-700"
+                                       >{item.halaman}
+                                       {item.kalimat
+                                          ? `(${item.kalimat})`
+                                          : ""}</td
+                                    >
+                                    <td
+                                       class="whitespace-nowrap px-4 py-2 text-gray-700"
+                                       >{item.last_meet || "-"}</td
+                                    >
+                                    <td
+                                       class="whitespace-nowrap px-4 py-2 text-gray-700"
+                                    >
+                                       <button
+                                          type="button"
+                                          on:click={() => {
+                                             active_group = item;
+                                             editGroupModal = true;
+
+                                             selected_peserta = peserta
+                                                .filter(
+                                                   (i) => i.group_id == item.id
+                                                )
+                                                .map((item) => ({
+                                                   label: item.name,
+                                                   value: item.id,
+                                                }));
+                                          }}
+                                          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                                          >Edit</button
+                                       >
+
+                                       <button
+                                          type="button"
+                                          on:click={() => {
+                                             active_group = item;
+                                             presentModal = true;
+
+                                             LoadPresence();
+                                          }}
+                                          class="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded"
+                                          >+ Absen</button
+                                       >
+                                       <button
+                                          type="button"
+                                          on:click={() => {
+                                             active_group = item;
+                                             historyModal = true;
+                                             loadHistory();
+                                          }}
+                                          class="bg-gray-100 hover:bg-gray-300 text-gray-500 font-bold py-2 px-4 rounded"
+                                          >History</button
+                                       >
+                                    </td>
+                                 </tr>
+                              {/each}
+                           </tbody>
+                        </table>
                      {/if}
                   </div>
                {/each}
