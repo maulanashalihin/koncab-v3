@@ -80,7 +80,9 @@
          <button
             on:click={() => {
                editmutasiModal = true;
-               active_mutasi = {};
+               active_mutasi = {
+                  name : ""
+               };
             }}
             class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
             >Tambah</button
@@ -129,15 +131,7 @@
                            {item.note || ""}</td
                         >
                         <td class="whitespace-nowrap px-4 py-2 text-gray-700">
-                           <button
-                              type="button"
-                              on:click={() => {
-                                 active_mutasi = item;
-                                 editmutasiModal = true;
-                              }}
-                              class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                              >Edit</button
-                           >
+                           
                         </td>
                      </tr>
                   {/each}
