@@ -17,9 +17,27 @@
 
    let presence_week = {};
 
+   let presences = [];
+
    let downloadModal = false;
 
+   let historyModal = false;
+
+   let history_data = [];
+
+   let weeklyDataModal = false;
+
    let download_data_type = "Kelompok";
+
+   let history_recap = {
+      terlaksana : 0,
+      kehadiran : 0,
+      ontime : 0,
+      kontrol : 0,
+      kontak : 0,
+   }
+
+   let tanggal = dayjs().format("YYYY-MM-DD");
 
    let start_date = dayjs()
       .subtract(1, "month")
@@ -58,7 +76,6 @@
          db.groups.put(active_group);
 
          Log("groups", active_group);
- 
 
          for await (let item of selected_peserta) {
             await db.peserta.update(item.value, {
@@ -99,44 +116,65 @@
    }
 
    async function LoadPresence() {
-      const id = dayjs().week() + ":" + dayjs().year() + ":" + active_group.id;
+      const id =
+         dayjs(tanggal).week() +
+         ":" +
+         dayjs(tanggal).year() +
+         ":" +
+         active_group.id;
 
-        selected_peserta = peserta.filter(
-                                    (i) => i.group_id == active_group.id
-                                 );
+      selected_peserta = peserta.filter((i) => i.group_id == active_group.id);
 
-      presence_week = (await db.presence_week.where({ id: id }).first()) || {};
-      presence_week.status = "Terlaksana";
-      presence_week.halaman = active_group.halaman;
-      presence_week.guru = active_group.guru;
-      presence_week.kalimat = active_group.kalimat;
-      presence_week.group_id = active_group.id;
-      presence_week.modul = active_group.modul; 
+      presence_week = await db.presence_week.get(id);
 
-      
-      if(!presence_week.presence || presence_week.presence.length == 0 || presence_week.presence.length != selected_peserta.length)
-      {
-         presence_week.presence = selected_peserta.map((item) => {
-         return {
-            id: presence_week.id + ":" + item.group_id + ":" + item.id,
-            name: item.name,
-            present: false,
-            ontime: false,
-            kontak: false,
-            kontrol: false,
-            buletin_fisik: 0,
-            buletin_digital: 0,
-            leaflet: 0,
-         };
-      });
+      if (!presence_week) {
+         presence_week =
+            (await db.presence_week.where({ id: id }).first()) || {};
+         presence_week.status = "Terlaksana";
+         presence_week.halaman = active_group.halaman;
+         presence_week.guru = active_group.guru;
+         presence_week.kalimat = active_group.kalimat;
+         presence_week.group_id = active_group.id;
+         presence_week.modul = active_group.modul;
+
+         presence_week.meeting_time = 120;
+         presence_week.tanggal = tanggal;
+         presence_week.id = id;
       }
-     
 
+      presences = [];
+      presences = await db.presences.where({ week_id: id }).toArray();
 
+      if (presences.length != selected_peserta.length) {
+         for await (let item of selected_peserta) {
+            const presence = presences.find((i) => i.peserta_id == item.id);
 
-      presence_week.meeting_time = 120;
-      presence_week.tanggal = dayjs().format("YYYY-MM-DD");
-      presence_week.id = id;
+            if (!presence) {
+               const presence_data = {
+                  id: presence_week.id + ":" + item.group_id + ":" + item.id,
+                  week_id: presence_week.id,
+                  group_id: active_group.id,
+                  peserta_id: item.id,
+                  name: item.name,
+                  present: item.present,
+                  present_index: item.present ? 1 : 0,
+                  ontime: item.ontime,
+                  ontime_index: item.ontime ? 1 : 0,
+                  kontrol: item.kontrol,
+                  kontrol_index: item.kontrol ? 1 : 0,
+                  kontak: item.kontak,
+                  kontak_index: item.kontak ? 1 : 0,
+                  buletin_fisik: item.buletin_fisik,
+                  buletin_digital: item.buletin_digital,
+                  leaflet: item.leaflet,
+                  buletin: item.buletin_fisik + item.buletin_digital,
+                  tanggal: presence_week.tanggal,
+               };
+               presences = [...presences, presence_data];
+               // await db.presences.put(presence_data);
+            }
+         }
+      }
    }
 
    async function savePresence() {
@@ -160,13 +198,13 @@
          Log("groups", active_group);
 
          presence_week.presence_percentage =
-            (presence_week.presence.filter((item) => item.present).length /
-               presence_week.presence.length) *
+            (presences.filter((item) => item.present).length /
+               presences.length) *
             100;
 
          presence_week.ontime_percentage =
-            (presence_week.presence.filter((item) => item.ontime).length /
-               presence_week.presence.length) *
+            (presences.filter((item) => item.ontime).length /
+               presences.length) *
             100;
       } else {
          presence_week.presence_percentage = 0;
@@ -175,23 +213,21 @@
       }
 
       presence_week.kontak_percentage =
-         (presence_week.presence.filter((item) => item.kontak).length /
-            presence_week.presence.length) *
+         (presences.filter((item) => item.kontak).length / presences.length) *
          100;
 
       presence_week.kontrol_percentage =
-         (presence_week.presence.filter((item) => item.kontrol).length /
-            presence_week.presence.length) *
+         (presences.filter((item) => item.kontrol).length / presences.length) *
          100;
 
-       
       await db.presence_week.put(presence_week);
 
       Log("presence_week", presence_week);
 
-      for await (let item of presence_week.presence) {
+      for await (let item of presences) {
          const presence_data = {
             id: presence_week.id + ":" + item.group_id + ":" + item.id,
+            name: item.name,
             week_id: presence_week.id,
             group_id: active_group.id,
             peserta_id: item.id,
@@ -209,6 +245,7 @@
             buletin: item.buletin_fisik + item.buletin_digital,
             tanggal: presence_week.tanggal,
          };
+
          await db.presences.put(presence_data);
 
          Log("presences", presence_data);
@@ -288,6 +325,111 @@
       a.click();
       document.body.removeChild(a);
    }
+
+   async function loadHistory() {
+      setTimeout(() => {
+         // @ts-ignore
+         const picker = new easepick.create({
+            element: document.getElementById("history_date"),
+            css: [
+               "https://cdn.jsdelivr.net/npm/@easepick/core@1.2.1/dist/index.css",
+               "https://cdn.jsdelivr.net/npm/@easepick/range-plugin@1.2.1/dist/index.css",
+            ],
+            plugins: ["RangePlugin"],
+            RangePlugin: {
+               tooltip: true,
+            },
+            setup(picker) {
+               picker.on("select", async (e) => {
+                  const { end, start } = e.detail;
+                  start_date = dayjs(start).format("YYYY-MM-DD");
+                  end_date = dayjs(end).format("YYYY-MM-DD");
+
+                  history_data = await db.presence_week
+                     .where("tanggal")
+                     .between(start_date, end_date)
+                     .filter((item) => {
+                        return item.group_id == active_group.id;
+                     })
+                     .toArray();
+
+                     recapHistory();
+
+                  // do something
+               });
+            },
+         });
+
+         picker.setDateRange(start_date, end_date);
+      }, 100);
+
+      history_data = await db.presence_week
+         .where("tanggal")
+         .between(start_date, end_date)
+         .filter((item) => {
+            return item.group_id == active_group.id;
+         })
+         .toArray();
+
+         recapHistory();
+   }
+
+   async function loadWeeklyData() {
+      weeklyDataModal = true;
+
+      setTimeout(() => {
+         // @ts-ignore
+         const picker = new easepick.create({
+            element: document.getElementById("history_date"),
+            css: [
+               "https://cdn.jsdelivr.net/npm/@easepick/core@1.2.1/dist/index.css",
+               "https://cdn.jsdelivr.net/npm/@easepick/range-plugin@1.2.1/dist/index.css",
+            ],
+            plugins: ["RangePlugin"],
+            RangePlugin: {
+               tooltip: true,
+            },
+            setup(picker) {
+               picker.on("select", async (e) => {
+                  const { end, start } = e.detail;
+                  start_date = dayjs(start).format("YYYY-MM-DD");
+                  end_date = dayjs(end).format("YYYY-MM-DD");
+
+                  history_data = await db.presence_week
+                     .where("tanggal")
+                     .between(start_date, end_date)
+                     .toArray();
+
+                     recapHistory();
+
+                  // do something
+               });
+            },
+         });
+
+         picker.setDateRange(start_date, end_date);
+      }, 100);
+
+      history_data = await db.presence_week
+         .where("tanggal")
+         .between(start_date, end_date)
+         .toArray();
+
+         recapHistory();
+   }
+
+   function recapHistory()
+   {
+      history_recap.terlaksana = Math.ceil(history_data.filter(item => item.status == "Terlaksana").length / history_data.length * 100);
+
+      history_recap.kehadiran = Math.ceil(history_data.reduce((a, b) => a + b.presence_percentage, 0) / history_data.length);
+
+      history_recap.ontime = Math.ceil(history_data.reduce((a, b) => a + b.ontime_percentage, 0) / history_data.length);
+
+      history_recap.kontrol = Math.ceil(history_data.reduce((a, b) => a + b.kontrol_percentage, 0) / history_data.length);
+
+      history_recap.kontak = Math.ceil(history_data.reduce((a, b) => a + b.kontak_percentage, 0) / history_data.length);
+   }
 </script>
 
 <div>
@@ -320,6 +462,25 @@
                </svg>
             </button>
             <button
+               on:click={loadWeeklyData}
+               class="bg-gray-200 flex gap-1 hover:bg-gray-300 text-black font-bold py-2 px-4 rounded"
+            >
+               <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  class="w-6 h-6"
+               >
+                  <path
+                     stroke-linecap="round"
+                     stroke-linejoin="round"
+                     d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"
+                  />
+               </svg>
+            </button>
+            <button
                on:click={() => {
                   editGroupModal = true;
                   active_group = {};
@@ -340,7 +501,7 @@
                      d="M12 4.5v15m7.5-7.5h-15"
                   />
                </svg>
-               <span>Kelompok</span>
+               <span />
             </button>
          </div>
       </div>
@@ -413,11 +574,21 @@
                               on:click={() => {
                                  active_group = item;
                                  presentModal = true;
-                               
+
                                  LoadPresence();
                               }}
                               class="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded"
                               >+ Absen</button
+                           >
+                           <button
+                              type="button"
+                              on:click={() => {
+                                 active_group = item;
+                                 historyModal = true;
+                                 loadHistory();
+                              }}
+                              class="bg-gray-100 hover:bg-gray-300 text-gray-500 font-bold py-2 px-4 rounded"
+                              >History</button
                            >
                         </td>
                      </tr>
@@ -482,7 +653,7 @@
             lists={peserta
                .filter((item) => item.id != active_group.guru_id)
                .map((item) => ({
-                  label: item.name,
+                  label: item.name + ` (${item.status})`,
                   value: item.id,
                }))}
             bind:value={selected_peserta}
@@ -501,6 +672,17 @@
 <Modal width="max-w-lg" bind:show={presentModal} title="Presensi Kelas">
    <form on:submit|preventDefault={savePresence} class="p-4 space-y-4">
       <div class="space-y-1">
+         <label for="date" class="font-medium">Tanggal Pertemuan</label>
+         <input
+            required
+            bind:value={tanggal}
+            on:change={LoadPresence}
+            class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
+            type="date"
+            id="date"
+         />
+      </div>
+      <div class="space-y-1">
          <label for="status" class="font-medium">Status</label>
          <select
             required
@@ -514,16 +696,6 @@
          </select>
       </div>
       {#if presence_week.status == "Terlaksana"}
-         <div class="space-y-1">
-            <label for="date" class="font-medium">Tanggal Pertemuan</label>
-            <input
-               required
-               bind:value={presence_week.tanggal}
-               class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
-               type="date"
-               id="date"
-            />
-         </div>
          <div class="space-y-1">
             <label for="modul" class="font-medium">Modul</label>
             <input
@@ -576,7 +748,7 @@
             <label for="presence" class="font-medium">Control Checklist</label>
 
             <div class="grid gap-6 divide-y">
-               {#each presence_week.presence || [] as item}
+               {#each presences || [] as item}
                   <div class="pt-4">
                      <div class="space-y-1">
                         <label for="buletin" class="font-medium">Nama</label>
@@ -717,4 +889,261 @@
          Simpan
       </button>
    </form>
+</Modal>
+
+<Modal width="max-w-lg" bind:show={historyModal} title="History">
+   <div class="p-4 space-y-4">
+      <div class="space-y-1">
+         <label for="modul" class="font-medium">Range Data</label>
+         <input
+            class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
+            type="text"
+            id="history_date"
+         />
+      </div>
+      <div class="overflow-x-auto">
+         <table class="min-w-full divide-y-2 divide-gray-200 bg-white text-sm">
+            <thead class=" ">
+               <tr>
+                  <th
+                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                  >
+                     Tanggal
+                  </th>
+                  <th
+                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                  >
+                     Status
+                  </th>
+                  <th
+                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                  >
+                     Hdr
+                  </th>
+                  <th
+                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                  >
+                     ontime
+                  </th>
+                  <th
+                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                  >
+                     Ktk
+                  </th>
+                  <th
+                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                  >
+                     Mtb
+                  </th>
+               </tr>
+            </thead>
+
+            <tbody class="divide-y divide-gray-200">
+               {#each history_data as item}
+                  <tr>
+                     <td
+                        class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                     >
+                        {item.tanggal}
+                     </td>
+                     <td class="whitespace-nowrap px-4 py-2 text-gray-700"
+                        >{item.status}</td
+                     >
+                     <td class="whitespace-nowrap px-4 py-2 text-gray-700"
+                        >{item.presence_percentage}</td
+                     >
+                     <td class="whitespace-nowrap px-4 py-2 text-gray-700"
+                        >{item.ontime_percentage}</td
+                     >
+                     <td class="whitespace-nowrap px-4 py-2 text-gray-700"
+                        >{item.kontak_percentage}</td
+                     >
+                     <td class="whitespace-nowrap px-4 py-2 text-gray-700"
+                        >{item.kontrol_percentage}</td
+                     >
+                  </tr>
+               {/each}
+            </tbody>
+            <thead class=" text-left">
+               <tr>
+                  <th
+                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                  >
+                      
+                  </th> 
+                  <th
+                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                  >
+                      {history_recap.terlaksana}
+                  </th>
+                  <th
+                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                  >
+                  {history_recap.kehadiran}
+                  </th>
+                  <th
+                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                  >
+                  {history_recap.ontime}
+                  </th>
+                  <th
+                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                  >
+                  {history_recap.kontak}
+                  </th>
+                  <th
+                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                  >
+                  {history_recap.kontrol}
+                  </th>
+                 
+               </tr>
+            </thead>
+         </table>
+      </div>
+   </div>
+</Modal>
+
+<Modal width="max-w-3xl" bind:show={weeklyDataModal} title="Weekly Data">
+   <div class="p-4 space-y-4">
+      <div class="space-y-1">
+         <label for="modul" class="font-medium">Range Data</label>
+         <input
+            class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
+            type="text"
+            id="history_date"
+         />
+      </div>
+      <div class="overflow-x-auto">
+         <table class="min-w-full divide-y-2 divide-gray-200 bg-white text-sm">
+            <thead class=" text-left">
+               <tr>
+                  <th
+                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                  >
+                     Tanggal
+                  </th>
+                  <th
+                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                  >
+                     Guru
+                  </th>
+                  <th
+                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                  >
+                     Modul
+                  </th>
+                  <th
+                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                  >
+                     Status
+                  </th>
+                  <th
+                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                  >
+                     Hdr
+                  </th>
+                  <th
+                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                  >
+                     ontime
+                  </th>
+                  <th
+                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                  >
+                     Ktk
+                  </th>
+                  <th
+                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                  >
+                     Mtb
+                  </th>
+               </tr>
+            </thead>
+
+            <tbody class="divide-y divide-gray-200">
+               {#each history_data as item}
+                  <tr>
+                     <td
+                        class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                     >
+                        {item.tanggal}
+                     </td>
+                     <td
+                        class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                     >
+                        {item.guru}
+                     </td>
+                     <td
+                        class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                     >
+                        {item.modul}
+                     </td>
+                     <td class="whitespace-nowrap px-4 py-2 text-gray-700"
+                        >{item.status}</td
+                     >
+                     <td class="whitespace-nowrap px-4 py-2 text-gray-700"
+                        >{item.presence_percentage}</td
+                     >
+                     <td class="whitespace-nowrap px-4 py-2 text-gray-700"
+                        >{item.ontime_percentage}</td
+                     >
+                     <td class="whitespace-nowrap px-4 py-2 text-gray-700"
+                        >{item.kontak_percentage}</td
+                     >
+                     <td class="whitespace-nowrap px-4 py-2 text-gray-700"
+                        >{item.kontrol_percentage}</td
+                     >
+                  </tr>
+               {/each}
+            </tbody>
+            <thead class=" text-left">
+               <tr>
+                  <th
+                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                  >
+                      
+                  </th>
+                  <th
+                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                  >
+                      
+                  </th>
+                  <th
+                  class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+               >
+                   
+               </th>
+                  <th
+                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                  >
+                      {history_recap.terlaksana}
+                  </th>
+                  <th
+                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                  >
+                  {history_recap.kehadiran}
+                  </th>
+                  <th
+                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                  >
+                  {history_recap.ontime}
+                  </th>
+                  <th
+                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                  >
+                  {history_recap.kontak}
+                  </th>
+                  <th
+                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                  >
+                  {history_recap.kontrol}
+                  </th>
+                 
+               </tr>
+            </thead>
+
+         </table>
+      </div>
+   </div>
 </Modal>

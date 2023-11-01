@@ -1,6 +1,11 @@
 <script>
+   import { split } from "postcss/lib/list";
    import Modal from "../../../Components/Modal.svelte";
-   import { MediaPrice, generateUUID } from "../../../Components/helper";
+   import {
+      MediaPrice,
+      dataToJSON,
+      generateUUID,
+   } from "../../../Components/helper";
    import { Log, db, pubsub } from "../../../Database/schema";
 
    let peserta = [];
@@ -11,11 +16,13 @@
 
    let active_peserta = {};
 
-   let website = localStorage.getItem("website")
-      ? JSON.parse(localStorage.getItem("website"))
-      : {};
+   let bulk_add_modal = false;
 
+   let bulk_text = "";
 
+   let bulk_data = [];
+
+ 
    async function Loadpeserta() {
       peserta = await db.peserta.toArray();
    }
@@ -33,35 +40,71 @@
 
    function savepeserta() {
       active_peserta.guru_index = active_peserta.is_guru ? 1 : 0;
-      active_peserta.total_spp = active_peserta.iltizamat + active_peserta.tabarruat + active_peserta.buletin * MediaPrice[website.Area].buletin + active_peserta.tabloid  * MediaPrice[website.Area].tabloid + active_peserta.majalah  * MediaPrice[website.Area].majalah;
+    
+
       if (active_peserta.id) {
          db.peserta.put(active_peserta);
+         Log("peserta", active_peserta);
       } else {
-         active_peserta.id = generateUUID();
+         active_peserta.id = active_peserta.name;
          db.peserta.add(active_peserta);
+         Log("peserta", active_peserta);
       }
-      Log("peserta", active_peserta);
       editpesertaModal = false;
       Loadpeserta();
    }
 
-   pubsub.subscribe("peserta", () => {
+   // pubsub.subscribe("peserta", () => {
+   //    Loadpeserta();
+   // });
+
+   async function saveBulk() {
+      for await (const item of bulk_data) {
+         item.id = item.name;
+
+         const check = await db.peserta.get(item.id);
+
+         if (check) {
+            check.name = item.name;
+            check.status = item.status;
+            check.is_guru = item.is_guru;
+            check.guru_index = check.is_guru ? 1 : 0;
+
+            await db.peserta.put(check);
+            Log("peserta", check);
+         } else {
+            item.guru_index = item.is_guru ? 1 : 0;
+            await db.peserta.add(item);
+            Log("peserta", item);
+         }
+      }
       Loadpeserta();
-   });
+      bulk_add_modal = false;
+   }
 </script>
 
 <div>
    <div>
       <div class="flex flex-col md:flex-row gap-3 md:justify-between">
          <div class="text-xl md:text-3xl">Anggota</div>
-         <button
-            on:click={() => {
-               editpesertaModal = true;
-               active_peserta = {};
-            }}
-            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            >Tambah</button
-         >
+         <div class="flex gap-1">
+            <button
+               on:click={() => {
+                  bulk_add_modal = true;
+                  active_peserta = {};
+               }}
+               class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+               >Bulk +</button
+            >
+            <button
+               on:click={() => {
+                  editpesertaModal = true;
+                  active_peserta = {};
+               }}
+               class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+               >Tambah</button
+            >
+         </div>
       </div>
 
       <div class="mt-10 overflow-x-auto">
@@ -101,7 +144,7 @@
                            {item.name}
                         </td>
                         <td class="whitespace-nowrap px-4 py-2 text-gray-700"
-                           >{item.status}</td
+                           >{item.status} {item.is_guru ? '(Guru)' : ''}</td
                         >
                         <td class="whitespace-nowrap px-4 py-2 text-gray-700"
                            >{item.modul || "-"}</td
@@ -175,62 +218,93 @@
          </div>
       {/if}
 
-      <div class="grid grid-cols-2 gap-3">
-         <div class="space-y-1">
-            <label for="iltizamat" class="font-medium">Iltizamat</label>
-            <input
-               required
-               bind:value={active_peserta.iltizamat}
-               class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
-               type="number"
-               id="iltizamat"
-               placeholder="60000"
-            />
-         </div>
-         <div class="space-y-1">
-            <label for="tabarruat" class="font-medium">Tabarruat</label>
-            <input
-               required
-               bind:value={active_peserta.tabarruat}
-               class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
-               type="number"
-               id="tabarruat"
-               placeholder="60000"
-            />
-         </div>
-         <div class="space-y-1">
-            <label for="buletin" class="font-medium">Jlh Buletin</label>
-            <input
-               required
-               bind:value={active_peserta.buletin}
-               class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
-               type="number"
-               id="buletin"
-               placeholder="5"
-            />
-         </div>
-         <div class="space-y-1">
-            <label for="tabloid" class="font-medium">Jlh Tabloid</label>
-            <input
-               required
-               bind:value={active_peserta.tabloid}
-               class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
-               type="number"
-               id="tabloid"
-               placeholder="5"
-            />
-         </div>
-         <div class="space-y-1">
-            <label for="majalah" class="font-medium">Jlh Majalah</label>
-            <input
-               required
-               bind:value={active_peserta.majalah}
-               class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
-               type="number"
-               id="majalah"
-               placeholder="5"
-            />
-         </div>
+       
+
+      <button
+         type="submit"
+         class="inline-flex justify-center items-center space-x-2 border font-semibold focus:outline-none w-full px-4 py-3 leading-6 rounded border-yellow-500 bg-yellow-500 text-white hover:text-white hover:bg-yellow-800 hover:border-yellow-800 focus:ring focus:ring-yellow-500 focus:ring-opacity-50 active:bg-yellow-700 active:border-yellow-700"
+      >
+         Simpan
+      </button>
+   </form>
+</Modal>
+
+<Modal width="max-w-lg" bind:show={bulk_add_modal} title="Bulk Upload">
+   <form on:submit|preventDefault={saveBulk} class="p-4 space-y-4">
+      <img src="/sample-paste.png" alt="">
+      <div class="text-gray-500">
+         <p>copy data dari excell dengan kolom 1 berisi nama, dan kolom 2 berisi status</p>
+      </div>
+      <div class="space-y-1">
+         <label for="bulk_text" class="font-medium">Upload Data</label>
+
+         <textarea
+            bind:value={bulk_text}
+            on:input={() => {
+               bulk_data = dataToJSON(bulk_text.split("\n"));
+               console.log(bulk_data);
+            }}
+            class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
+            id="bulk_text"
+            placeholder="Paste data dari excell ke sini"
+            cols="30"
+            rows="10"
+         />
+      </div>
+
+      <!--
+  Heads up! 👋
+
+  This component comes with some `rtl` classes. Please remove them if they are not needed in your project.
+-->
+
+      <div class="overflow-x-auto">
+         <table class="min-w-full divide-y-2 divide-gray-200 bg-white text-sm">
+            <thead class="text-left">
+               <tr>
+                  <th
+                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                  >
+                     Nama
+                  </th>
+                  <th
+                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                  >
+                     Status
+                  </th>
+                  <th
+                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                  >
+                     Guru
+                  </th>
+               </tr>
+            </thead>
+
+            <tbody class=" ">
+               {#each bulk_data as item}
+                  <tr>
+                     <td
+                        class="whitespace-nowrap border px-4 py-2 font-medium text-gray-900"
+                     >
+                        <input type="text" bind:value={item.name} />
+                     </td>
+                     <td
+                        class="whitespace-nowrap border px-4 py-2 text-gray-700"
+                     >
+                        <input type="text" bind:value={item.status} /></td
+                     >
+                     <td
+                        class="whitespace-nowrap border px-4 py-2 text-gray-700"
+                     >
+                        <input
+                           type="checkbox"
+                           bind:checked={item.is_guru}
+                        /></td
+                     >
+                  </tr>
+               {/each}
+            </tbody>
+         </table>
       </div>
 
       <button

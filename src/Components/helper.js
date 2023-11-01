@@ -104,3 +104,15 @@ export let MediaPrice = {
      buletin: 500,
   },
 };
+
+
+export function dataToJSON(data) {
+  const jsonArr = [];
+
+  data.forEach(line => {
+    const [name, status,] = line.split('\t');
+    jsonArr.push({ name: name, status: status });
+  });
+
+  return jsonArr
+}
