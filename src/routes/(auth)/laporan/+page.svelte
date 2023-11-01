@@ -98,8 +98,8 @@
       const anggota = await db.peserta.toArray();
 
       for await (const item of anggota) {
-         majalah = majalah + item.majalah;
-         tabloid = tabloid + item.tabloid;
+         majalah = majalah + item.majalah || 0;
+         tabloid = tabloid + item.tabloid || 0;
       }
 
       const rata2_majalah = majalah / anggota.length;
