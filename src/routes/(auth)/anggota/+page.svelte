@@ -61,6 +61,9 @@
 
    async function saveBulk() {
       for await (const item of bulk_data) {
+         
+         if(!item.name) continue;
+
          item.id = item.name;
 
          const check = await db.peserta.get(item.id);
