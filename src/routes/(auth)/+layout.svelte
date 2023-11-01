@@ -45,7 +45,7 @@
                 {
                     path: "/hm",
                     title: "HM",
-                },
+                }, 
                 {
                     path: "/mal",
                     title: "Mal",

@@ -30,12 +30,12 @@
    let download_data_type = "Kelompok";
 
    let history_recap = {
-      terlaksana : 0,
-      kehadiran : 0,
-      ontime : 0,
-      kontrol : 0,
-      kontak : 0,
-   }
+      terlaksana: 0,
+      kehadiran: 0,
+      ontime: 0,
+      kontrol: 0,
+      kontak: 0,
+   };
 
    let tanggal = dayjs().format("YYYY-MM-DD");
 
@@ -72,6 +72,8 @@
          (item) => item.id == active_group.guru_id
       ).name;
 
+     
+
       if (active_group.id) {
          db.groups.put(active_group);
 
@@ -100,6 +102,7 @@
                await db.peserta.update(item.value, {
                   group_id: active_group.id,
                   modul: active_group.modul,
+                  
                   halaman: active_group.halaman,
                   kalimat: active_group.kalimat,
                });
@@ -353,7 +356,7 @@
                      })
                      .toArray();
 
-                     recapHistory();
+                  recapHistory();
 
                   // do something
                });
@@ -371,7 +374,7 @@
          })
          .toArray();
 
-         recapHistory();
+      recapHistory();
    }
 
    async function loadWeeklyData() {
@@ -400,7 +403,7 @@
                      .between(start_date, end_date)
                      .toArray();
 
-                     recapHistory();
+                  recapHistory();
 
                   // do something
                });
@@ -415,20 +418,35 @@
          .between(start_date, end_date)
          .toArray();
 
-         recapHistory();
+      recapHistory();
    }
 
-   function recapHistory()
-   {
-      history_recap.terlaksana = Math.ceil(history_data.filter(item => item.status == "Terlaksana").length / history_data.length * 100);
+   function recapHistory() {
+      history_recap.terlaksana = Math.ceil(
+         (history_data.filter((item) => item.status == "Terlaksana").length /
+            history_data.length) *
+            100
+      );
 
-      history_recap.kehadiran = Math.ceil(history_data.reduce((a, b) => a + b.presence_percentage, 0) / history_data.length);
+      history_recap.kehadiran = Math.ceil(
+         history_data.reduce((a, b) => a + b.presence_percentage, 0) /
+            history_data.length
+      );
 
-      history_recap.ontime = Math.ceil(history_data.reduce((a, b) => a + b.ontime_percentage, 0) / history_data.length);
+      history_recap.ontime = Math.ceil(
+         history_data.reduce((a, b) => a + b.ontime_percentage, 0) /
+            history_data.length
+      );
 
-      history_recap.kontrol = Math.ceil(history_data.reduce((a, b) => a + b.kontrol_percentage, 0) / history_data.length);
+      history_recap.kontrol = Math.ceil(
+         history_data.reduce((a, b) => a + b.kontrol_percentage, 0) /
+            history_data.length
+      );
 
-      history_recap.kontak = Math.ceil(history_data.reduce((a, b) => a + b.kontak_percentage, 0) / history_data.length);
+      history_recap.kontak = Math.ceil(
+         history_data.reduce((a, b) => a + b.kontak_percentage, 0) /
+            history_data.length
+      );
    }
 </script>
 
@@ -508,93 +526,134 @@
 
       <div class="mt-10 overflow-x-auto">
          {#if groups.length}
-            <table
-               class="min-w-full divide-y-2 divide-gray-200 bg-white text-sm"
-            >
-               <thead class="ltr:text-left rtl:text-right">
-                  <tr>
-                     <th class="text-left px-4 py-2 font-medium text-gray-900">
-                        Guru
-                     </th>
+            <div class="space-y-12">
+               {#each ["Ahad", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"] as day}
+                  <div>
+                     <div class="text-lg border-b pb-2">
+                       {day}
+                     </div>
+                     {#if groups.filter(item=>(item.hari == day)).length}
+                        
+                     
+                     <table
+                        class="min-w-full divide-y-2 divide-gray-200 bg-white text-sm"
+                     >
+                        <thead class="ltr:text-left rtl:text-right">
+                           <tr>
+                              <th
+                                 class="text-left px-4 py-2 font-medium text-gray-900"
+                              >
+                                 Guru
+                              </th>
 
-                     <th class="text-left px-4 py-2 font-medium text-gray-900">
-                        Modul
-                     </th>
-                     <th class="text-left px-4 py-2 font-medium text-gray-900">
-                        Halaman
-                     </th>
-                     <th class="text-left px-4 py-2 font-medium text-gray-900">
-                        Pertemuan Terakhir
-                     </th>
-                     <th class="text-left px-4 py-2 font-medium text-gray-900">
-                        Action
-                     </th>
-                  </tr>
-               </thead>
+ <th
+                                 class="text-left px-4 py-2 font-medium text-gray-900"
+                              >
+                                 Jam
+                              </th>
+                              <th
+                                 class="text-left px-4 py-2 font-medium text-gray-900"
+                              >
+                                 Modul
+                              </th>
+                              <th
+                                 class="text-left px-4 py-2 font-medium text-gray-900"
+                              >
+                                 Halaman
+                              </th>
+                              <th
+                                 class="text-left px-4 py-2 font-medium text-gray-900"
+                              >
+                                 Pertemuan Terakhir
+                              </th>
+                              <th
+                                 class="text-left px-4 py-2 font-medium text-gray-900"
+                              >
+                                 Action
+                              </th>
+                           </tr>
+                        </thead>
 
-               <tbody class="divide-y divide-gray-200">
-                  {#each groups as item}
-                     <tr>
-                        <td
-                           class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
-                        >
-                           {item.guru}
-                        </td>
+                        <tbody class="divide-y divide-gray-200">
+                           {#each groups.filter(item=>(item.hari == day)).sort((a, b) => a.jam - b.jam)
+                              as item}
+                              <tr>
+                                 <td
+                                    class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                                 >
+                                    {item.guru}
+                                 </td>
+                                 <td
+                                 class="whitespace-nowrap px-4 py-2 text-gray-700"
+                                 >{item.jam}</td
+                              >
+                                 <td
+                                    class="whitespace-nowrap px-4 py-2 text-gray-700"
+                                    >{item.modul}</td
+                                 >
+                                 <td
+                                    class="whitespace-nowrap px-4 py-2 text-gray-700"
+                                    >{item.halaman}
+                                    {item.kalimat
+                                       ? `(${item.kalimat})`
+                                       : ""}</td
+                                 >
+                                 <td
+                                    class="whitespace-nowrap px-4 py-2 text-gray-700"
+                                    >{item.last_meet || "-"}</td
+                                 >
+                                 <td
+                                    class="whitespace-nowrap px-4 py-2 text-gray-700"
+                                 >
+                                    <button
+                                       type="button"
+                                       on:click={() => {
+                                          active_group = item;
+                                          editGroupModal = true;
 
-                        <td class="whitespace-nowrap px-4 py-2 text-gray-700"
-                           >{item.modul}</td
-                        >
-                        <td class="whitespace-nowrap px-4 py-2 text-gray-700"
-                           >{item.halaman}
-                           {item.kalimat ? `(${item.kalimat})` : ""}</td
-                        >
-                        <td class="whitespace-nowrap px-4 py-2 text-gray-700"
-                           >{item.last_meet || "-"}</td
-                        >
-                        <td class="whitespace-nowrap px-4 py-2 text-gray-700">
-                           <button
-                              type="button"
-                              on:click={() => {
-                                 active_group = item;
-                                 editGroupModal = true;
+                                          selected_peserta = peserta
+                                             .filter(
+                                                (i) => i.group_id == item.id
+                                             )
+                                             .map((item) => ({
+                                                label: item.name,
+                                                value: item.id,
+                                             }));
+                                       }}
+                                       class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                                       >Edit</button
+                                    >
 
-                                 selected_peserta = peserta
-                                    .filter((i) => i.group_id == item.id)
-                                    .map((item) => ({
-                                       label: item.name,
-                                       value: item.id,
-                                    }));
-                              }}
-                              class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                              >Edit</button
-                           >
+                                    <button
+                                       type="button"
+                                       on:click={() => {
+                                          active_group = item;
+                                          presentModal = true;
 
-                           <button
-                              type="button"
-                              on:click={() => {
-                                 active_group = item;
-                                 presentModal = true;
-
-                                 LoadPresence();
-                              }}
-                              class="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded"
-                              >+ Absen</button
-                           >
-                           <button
-                              type="button"
-                              on:click={() => {
-                                 active_group = item;
-                                 historyModal = true;
-                                 loadHistory();
-                              }}
-                              class="bg-gray-100 hover:bg-gray-300 text-gray-500 font-bold py-2 px-4 rounded"
-                              >History</button
-                           >
-                        </td>
-                     </tr>
-                  {/each}
-               </tbody>
-            </table>
+                                          LoadPresence();
+                                       }}
+                                       class="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded"
+                                       >+ Absen</button
+                                    >
+                                    <button
+                                       type="button"
+                                       on:click={() => {
+                                          active_group = item;
+                                          historyModal = true;
+                                          loadHistory();
+                                       }}
+                                       class="bg-gray-100 hover:bg-gray-300 text-gray-500 font-bold py-2 px-4 rounded"
+                                       >History</button
+                                    >
+                                 </td>
+                              </tr>
+                           {/each}
+                        </tbody>
+                     </table>
+                     {/if}
+                  </div>
+               {/each}
+            </div>
          {:else}
             <div class="border border-dashed py-20 text-gray-500">
                <div class="text-center">Tidak ada Kelompok</div>
@@ -619,6 +678,30 @@
                <option value={item.id}>{item.name}</option>
             {/each}
          </select>
+      </div>
+      <div class="space-y-1">
+         <label for="hari" class="font-medium">Hari</label>
+         <select
+            required
+            bind:value={active_group.hari}
+            class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
+            id="hari"
+         >
+            {#each ["Ahad", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"] as item}
+               <option value={item}>{item}</option>
+            {/each}
+         </select>
+      </div>
+      <div class="space-y-1">
+         <label for="jam" class="font-medium">Jam</label>
+
+         <input
+            type="time"
+            id="jam"
+            bind:value={active_group.jam}
+            name="jam"
+            class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
+         />
       </div>
       <div class="space-y-1">
          <label for="modul" class="font-medium">Modul</label>
@@ -968,35 +1051,32 @@
                <tr>
                   <th
                      class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
-                  >
-                      
-                  </th> 
+                  />
                   <th
                      class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
                   >
-                      {history_recap.terlaksana}
+                     {history_recap.terlaksana}
                   </th>
                   <th
                      class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
                   >
-                  {history_recap.kehadiran}
+                     {history_recap.kehadiran}
                   </th>
                   <th
                      class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
                   >
-                  {history_recap.ontime}
+                     {history_recap.ontime}
                   </th>
                   <th
                      class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
                   >
-                  {history_recap.kontak}
+                     {history_recap.kontak}
                   </th>
                   <th
                      class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
                   >
-                  {history_recap.kontrol}
+                     {history_recap.kontrol}
                   </th>
-                 
                </tr>
             </thead>
          </table>
@@ -1101,48 +1181,40 @@
                <tr>
                   <th
                      class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                  />
+                  <th
+                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                  />
+                  <th
+                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
+                  />
+                  <th
+                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
                   >
-                      
+                     {history_recap.terlaksana}
                   </th>
                   <th
                      class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
                   >
-                      
-                  </th>
-                  <th
-                  class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
-               >
-                   
-               </th>
-                  <th
-                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
-                  >
-                      {history_recap.terlaksana}
+                     {history_recap.kehadiran}
                   </th>
                   <th
                      class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
                   >
-                  {history_recap.kehadiran}
+                     {history_recap.ontime}
                   </th>
                   <th
                      class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
                   >
-                  {history_recap.ontime}
+                     {history_recap.kontak}
                   </th>
                   <th
                      class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
                   >
-                  {history_recap.kontak}
+                     {history_recap.kontrol}
                   </th>
-                  <th
-                     class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
-                  >
-                  {history_recap.kontrol}
-                  </th>
-                 
                </tr>
             </thead>
-
          </table>
       </div>
    </div>

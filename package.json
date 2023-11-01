@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev-server": "",
-    "dev": "vite dev --host",
+    "dev": "rm -rf build && vite dev --host",
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
