@@ -149,7 +149,8 @@
       presences = [];
       presences = await db.presences.where({ week_id: id }).toArray();
 
-      if (presences.length != selected_peserta.length) {
+      console.log(selected_peserta)
+      if (presences.length < selected_peserta.length) {
          for await (let item of selected_peserta) {
             const presence = presences.find((i) => i.peserta_id == item.id);
 

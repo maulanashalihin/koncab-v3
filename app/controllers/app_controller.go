@@ -217,15 +217,22 @@ func (u *AppController) GetLog(c *fiber.Ctx) error {
 
 	var logs []models.Log
 
-	result := data.Find(&logs)
+	lastCreatedAt := c.Query("sync_time")
 
-	if result.Error != nil {
-
-		return c.Status(500).JSON(fiber.Map{
-
-			"error": result.Error.Error(),
-		})
-
+	if lastCreatedAt == "" {
+		result := data.Order("created_at ASC").Find(&logs)
+		if result.Error != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error": result.Error.Error(),
+			})
+		}
+	} else {
+		result := data.Where("created_at > ?", lastCreatedAt).Order("created_at ASC").Find(&logs)
+		if result.Error != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error": result.Error.Error(),
+			})
+		}
 	}
 
 	return c.JSON(logs)
