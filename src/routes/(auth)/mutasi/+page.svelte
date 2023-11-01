@@ -188,7 +188,7 @@
                id="status"
             >
                <option value="P">P</option>
-               <option value="K">status</option>
+               <option value="K">K</option>
             </select>
          </div>
       {:else}
