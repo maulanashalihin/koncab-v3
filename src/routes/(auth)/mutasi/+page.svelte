@@ -37,7 +37,7 @@
                createdAt: dayjs().format("YYYY-MM-DD"),
             });
             await Log("peserta", {
-               id: active_mutasi.id,
+               id: active_mutasi.name,
                status: status,
                name: active_mutasi.name,
                createdAt: dayjs().format("YYYY-MM-DD"),
