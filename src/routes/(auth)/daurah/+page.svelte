@@ -39,8 +39,18 @@
  
        Log("daurah", active_daurah);
 
-       active_daurah.list_followup.forEach((item) => {
-         db.kontak.update(item, { status: "Sukses" });
+       active_daurah.list_followup.forEach(async (item) => {
+         
+         const contact = await db.kontak.get(item);
+
+         if (contact) {
+            contact.status = "Sukses";
+            
+            await db.kontak.put(contact);
+
+            Log("kontak", contact);
+         }
+ 
        });
  
        editdaurahModal = false;

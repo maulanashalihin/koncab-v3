@@ -35,48 +35,56 @@
 
    function savehu() {
       if (active_hu.id) {
-
-         if(is_mundur)
-         {
+         if (is_mundur) {
             active_hu.status = "Mundur";
          }
 
          db.hu.put(active_hu);
 
          if (action == "HU ke CP") {
-            db.upgrade.put({
+            const upgrade_data = {
                id: generateUUID(),
                name: active_hu.name,
                status: action,
                createdAt: dayjs().format("YYYY-MM-DD"),
-            });
+            };
+            db.upgrade.put(upgrade_data);
+            Log("upgrade", upgrade_data);
          }
 
          if (action == "CP ke P") {
-            db.upgrade.put({
+            const upgrade_data = {
                id: generateUUID(),
                name: active_hu.name,
                status: action,
                createdAt: dayjs().format("YYYY-MM-DD"),
-            });
-            db.peserta.put({
+            };
+            db.upgrade.put(upgrade_data);
+            Log("upgrade", upgrade_data);
+
+            const new_Peserta = {
                id: active_hu.name,
                name: active_hu.name,
                status: "P",
                createdAt: dayjs().format("YYYY-MM-DD"),
-            });
+            };
+            db.peserta.put(new_Peserta);
+            Log("peserta", new_Peserta);
          }
       } else {
          active_hu.id = generateUUID();
          db.hu.add(active_hu);
 
          if (action == "HU Baru") {
-            db.upgrade.put({
+            const upgrade_data = {
                id: generateUUID(),
                name: active_hu.name,
                status: action,
                createdAt: dayjs().format("YYYY-MM-DD"),
-            });
+            };
+            db.upgrade.put(upgrade_data);
+
+            Log("upgrade", upgrade_data);
          }
       }
       Log("hu", active_hu);
