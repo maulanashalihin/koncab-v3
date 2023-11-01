@@ -1,4 +1,5 @@
 <script>
+   import { stringify } from "postcss";
     import Modal from "../../../Components/Modal.svelte"; 
     import { generateUUID } from "../../../Components/helper";
     import { Log, db, pubsub } from "../../../Database/schema";
@@ -8,11 +9,18 @@
     let active_hu = {};
  
     let guru = [];
+
+    let list_contacts = [];
+
+    let action = "";
  
     async function Loadhu() {
        hu = await db.hu.toArray();
        guru = await db.peserta.toArray();
+       list_contacts = await db.kontak.where("status").equals("Sukses").toArray();
     }
+
+   
  
     Loadhu();
  
@@ -47,7 +55,14 @@
              <button
                 on:click={() => {
                    edithuModal = true;
-                   active_hu = {};
+                   action = "HU Baru"
+                   active_hu = {
+                        name: "",
+                        status: "HU",
+                        pertemuan: 0,
+                        guru: "",
+                        note: "",
+                   };
                 }}
                 class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                 >Tambah</button
@@ -109,6 +124,36 @@
                                   class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                                   >Edit</button
                                >
+                                  {#if item.status == "HU"}
+                                  <button
+                                  type="button"
+                                  on:click={() => {
+                                  
+                                     active_hu = JSON.parse(JSON.stringify(item));
+                                     active_hu.status = "CP";
+                                     active_hu.pertemuan = 0;
+                                     action = "HU ke CP"
+                                     edithuModal = true;
+                                  }}
+                                  class="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded"
+                                  >Upgrade ke CP</button
+                               >
+                                  {/if}
+                                  {#if item.status == "CP"}
+                                  <button
+                                  type="button"
+                                  on:click={() => {
+                                  
+                                     active_hu = JSON.parse(JSON.stringify(item));
+                                     active_hu.status = "P";
+                                     active_hu.pertemuan = 0;
+                                     action = "CP ke CP"
+                                     edithuModal = true;
+                                  }}
+                                  class="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded"
+                                  >Upgrade ke P</button
+                               >
+                                  {/if}
                             </td>
                          </tr>
                       {/each}
@@ -126,56 +171,62 @@
  
  <Modal width="max-w-lg" bind:show={edithuModal} title="Edit hu">
     <form on:submit|preventDefault={savehu} class="p-4 space-y-4">
+       
        <div class="space-y-1">
           <label for="name" class="font-medium">Nama</label>
-          <input
-             required
-             bind:value={active_hu.name}
-             class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
-             type="text"
-             id="name"
-             placeholder="Masukan Nama"
-          />
+         {#if active_hu.id}
+         <input
+         disabled
+         bind:value={active_hu.name}
+         class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
+         
+         id="name"
+        
+      />
+            {:else}
+            <select
+            required
+            bind:value={active_hu.name}
+            class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
+            
+            id="name"
+         >
+           <option disabled value="">Pilih Kontakan</option>
+           {#each list_contacts as item}
+           <option value="{item.name}">{item.name}</option>
+           {/each} 
+         </select>
+         {/if}
        </div>
+       {#if active_hu.status == "HU" || active_hu.status == "CP"} 
        <div class="space-y-1">
-          <label for="status" class="font-medium">Status</label>
-          <select
-             required
-             bind:value={active_hu.status}
-             class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
-             
-             id="status"
-          >
-             <option value="HU">HU</option>
-             <option value="CP">CP</option>
-          </select>
-       </div>
-       <div class="space-y-1">
-          <label for="guru" class="font-medium">Guru</label>
- 
-          <select
-             required
-             bind:value={active_hu.guru}
-             class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
-          
-             id="guru"
-          >
-             {#each guru as item}
-                <option value={item.name}>{item.name}</option>
-             {/each}
-          </select>
-       </div>
-       <div class="space-y-1">
-          <label for="pertemuan" class="font-medium">Pertemuan</label>
-          <input
-             required
-             bind:value={active_hu.pertemuan}
-             class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
-             type="number"
-             id="pertemuan"
-             placeholder="Jumlah Pertemuan"
-          />
-       </div>
+         <label for="guru" class="font-medium">Guru</label>
+
+         <select
+            required
+            bind:value={active_hu.guru}
+            class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
+         
+            id="guru"
+         >
+         <option disabled value="">Pilih Guru</option>
+            {#each guru as item}
+               <option value={item.name}>{item.name}</option>
+            {/each}
+         </select>
+      </div>
+      <div class="space-y-1">
+         <label for="pertemuan" class="font-medium">Pertemuan</label>
+         <input
+            required
+            bind:value={active_hu.pertemuan}
+            class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
+            type="number"
+            id="pertemuan"
+            placeholder="Jumlah Pertemuan"
+         />
+      </div>
+       {/if}
  
        <div class="space-y-1">
           <label for="pertemuan" class="font-medium">Catatan</label>

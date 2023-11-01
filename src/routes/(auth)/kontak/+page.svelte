@@ -1,6 +1,6 @@
 <script>
     import Modal from "../../../Components/Modal.svelte"; 
-    import { generateUUID } from "../../../Components/helper";
+    import { generateRandomString, generateUUID } from "../../../Components/helper";
     import dayjs from "dayjs";
     import { Log, db, pubsub } from "../../../Database/schema";
  
@@ -36,7 +36,7 @@
        if (active_kontak.id) {
           db.kontak.put(active_kontak);
        } else {
-          active_kontak.id = generateUUID();
+          active_kontak.id = active_kontak.name;
           active_kontak.createdAt = dayjs().format("YYYY-MM-DD");
           db.kontak.add(active_kontak);
           

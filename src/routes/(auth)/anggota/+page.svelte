@@ -47,6 +47,7 @@
          Log("peserta", active_peserta);
       } else {
          active_peserta.id = active_peserta.name;
+         active_peserta.total_spp = 0 ;
          db.peserta.add(active_peserta);
          Log("peserta", active_peserta);
       }
@@ -74,6 +75,12 @@
             Log("peserta", check);
          } else {
             item.guru_index = item.is_guru ? 1 : 0;
+            item.iltizamat = 0;
+            item.tabarruat = 0;
+            item.total_spp = 0;
+            item.buletin = 0;
+            item.majalah = 0;
+            item.tabloid = 0;
             await db.peserta.add(item);
             Log("peserta", item);
          }

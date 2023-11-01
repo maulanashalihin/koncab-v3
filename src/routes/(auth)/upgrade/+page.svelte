@@ -57,14 +57,7 @@
     <div class="max-w-7xl mx-auto">
        <div class="flex flex-col md:flex-row gap-3 md:justify-between">
           <div class="text-xl md:text-3xl">upgrade</div>
-          <button
-             on:click={() => {
-                editupgradeModal = true;
-                active_upgrade = {};
-             }}
-             class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-             >Tambah</button
-          >
+          
        </div>
  
        <div class="mt-10 overflow-x-auto">

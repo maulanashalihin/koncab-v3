@@ -470,30 +470,37 @@
       <div class="space-y-1">
          <label for="jumlah" class="font-medium">Tagihan Bulanan</label>
          <div>
-            {active_peserta.total_spp.toLocaleString("id")}
+            {active_peserta.total_spp ? active_peserta.total_spp.toLocaleString("id") : 0}
          </div>
       </div>
       <div>
          <div class="font-medium">Rincian</div>
          <div class="grid grid-cols-2">
             <div class="text-gray-500">
-               Iltizamat : Rp.{active_peserta.iltizamat}
+               Iltizamat : Rp.{active_peserta.iltizamat || 0}
             </div>
             <div class="text-gray-500">
-               Tabarruat : Rp.{active_peserta.tabarruat}
+               Tabarruat : Rp.{active_peserta.tabarruat || 0}
             </div>
+            {#if active_peserta.buletin}
             <div class="text-gray-500">
                Buletin : Rp.{MediaPrice[website.Area].buletin *
                   active_peserta.buletin} ({active_peserta.buletin} exp)
             </div>
+            {/if}
+            {#if active_peserta.majalah}
             <div class="text-gray-500">
                Majalah : Rp.{MediaPrice[website.Area].majalah *
                   active_peserta.majalah} ({active_peserta.majalah} exp)
             </div>
-            <div class="text-gray-500">
-               Tabloid : Rp.{MediaPrice[website.Area].tabloid *
-                  active_peserta.tabloid} ({active_peserta.tabloid} exp)
-            </div>
+            {/if}
+           {#if active_peserta.tabloid}
+           <div class="text-gray-500">
+            Tabloid : Rp.{MediaPrice[website.Area].tabloid *
+               active_peserta.tabloid} ({active_peserta.tabloid} exp)
+         </div>
+           {/if}
+           
          </div>
       </div>
       <div class="grid grid-cols-2 gap-3">
@@ -533,6 +540,7 @@
                >
             </div>
          </div>
+         {#if active_peserta.buletin}
          <div class="space-y-1">
             <label for="buletin" class="font-medium">Buletin </label>
             <input
@@ -549,6 +557,10 @@
                >
             </div>
          </div>
+         {/if}
+         {#if active_peserta.majalah}
+            
+       
          <div class="space-y-1">
             <label for="majalah" class="font-medium">Majalah </label>
             <input
@@ -565,6 +577,11 @@
                >
             </div>
          </div>
+         {/if}
+
+         {#if active_peserta.tabloid}
+            
+        
          <div class="space-y-1">
             <label for="tabloid" class="font-medium">Tabloid </label>
             <input
@@ -581,6 +598,7 @@
                >
             </div>
          </div>
+         {/if}
       </div>
       <div class="space-y-1">
          <label for="jumlah" class="font-medium">Total Pembayaran</label>
@@ -613,7 +631,7 @@
                      Pembayaran {item.bulan}
                   </div>
                   <div class="bg-green-500 text-white rounded-xl px-2">
-                     Rp.{item.jumlah.toLocaleString("id")}
+                     Rp.{item.jumlah ? item.jumlah.toLocaleString("id") : 0}
                   </div>
                </div>
             {:else}
@@ -622,7 +640,7 @@
                      Tagihan {item.bulan}
                   </div>
                   <div class="bg-red-500 text-white rounded-xl px-2">
-                     Rp.{item.total.toLocaleString("id")}
+                     Rp.{item.total ? item.total.toLocaleString("id") : 0}
                   </div>
                </div>
             {/if}

@@ -117,6 +117,7 @@
    }
 
    async function LoadPresence() {
+      
       const id =
          dayjs(tanggal).week() +
          ":" +
@@ -129,19 +130,21 @@
       presence_week = await db.presence_week.get(id);
 
       if (!presence_week) {
-         presence_week =
-            (await db.presence_week.where({ id: id }).first()) || {};
+         presence_week = {}; 
+
          presence_week.status = "Terlaksana";
          presence_week.halaman = active_group.halaman;
          presence_week.guru = active_group.guru;
          presence_week.kalimat = active_group.kalimat;
          presence_week.group_id = active_group.id;
          presence_week.modul = active_group.modul;
-
+         
          presence_week.meeting_time = 120;
          presence_week.tanggal = tanggal;
          presence_week.id = id;
       }
+
+       
 
       presences = [];
       presences = await db.presences.where({ week_id: id }).toArray();
@@ -180,7 +183,7 @@
 
    async function savePresence() {
       if (presence_week.tanggal > active_group.last_meet) {
-         
+
          active_group.last_meet = presence_week.tanggal;
          active_group.halaman = presence_week.halaman;
          active_group.kalimat = presence_week.kalimat;
@@ -711,7 +714,8 @@
             class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
             id="modul"
          >
-            {#each ["NI", "TH", "MH", "DI", "SEI", "AMWAL", "SPI"] as item}
+          
+            {#each ["NIS", "TAK", "MAF", "DAU", "AJH", "NIJ", "NIQ","AMW","SYA"] as item}
                <option value={item}>{item}</option>
             {/each}
          </select>
@@ -765,6 +769,7 @@
             id="date"
          />
       </div>
+      {#if presence_week && presence_week.status}
       <div class="space-y-1">
          <label for="status" class="font-medium">Status</label>
          <select
@@ -778,7 +783,9 @@
             <option value="Kosong">Kosong</option>
          </select>
       </div>
-      {#if presence_week.status == "Terlaksana"}
+      {/if}
+      
+      {#if presence_week && presence_week.status == "Terlaksana"}
          <div class="space-y-1">
             <label for="modul" class="font-medium">Modul</label>
             <input
@@ -826,7 +833,7 @@
             <small>dalam satuan menit</small>
          </div>
       {/if}
-      {#if presence_week.status != "Laporan tidak masuk"}
+      {#if presence_week && presence_week.status != "Laporan tidak masuk"}
          <div class="space-y-1">
             <label for="presence" class="font-medium">Control Checklist</label>
 

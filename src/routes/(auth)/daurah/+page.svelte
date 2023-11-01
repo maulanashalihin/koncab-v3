@@ -38,6 +38,10 @@
        db.daurah.put(active_daurah);
  
        Log("daurah", active_daurah);
+
+       active_daurah.list_followup.forEach((item) => {
+         db.kontak.update(item, { status: "Sukses" });
+       });
  
        editdaurahModal = false;
  
