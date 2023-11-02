@@ -342,6 +342,15 @@
                               type="button"
                               on:click={() => {
                                  active_peserta = item;
+                                 active_peserta.buletin = active_peserta.buletin
+                                    ? active_peserta.buletin
+                                    : 0;
+                                    active_peserta.tabloid = active_peserta.tabloid
+                                    ? active_peserta.tabloid
+                                    : 0;
+                                    active_peserta.majalah = active_peserta.majalah
+                                    ? active_peserta.majalah
+                                    : 0;
                                  editpesertaModal = true;
                               }}
                               class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
@@ -417,7 +426,7 @@
             />
          </div>
          <div class="space-y-1">
-            <label for="buletin" class="font-medium">Jlh Buletin</label>
+            <label for="buletin" class="font-medium">Jlh Beli Buletin</label>
             <input
                required
                bind:value={active_peserta.buletin}
@@ -428,7 +437,7 @@
             />
          </div>
          <div class="space-y-1">
-            <label for="tabloid" class="font-medium">Jlh Tabloid</label>
+            <label for="tabloid" class="font-medium">Jlh Beli Tabloid</label>
             <input
                required
                bind:value={active_peserta.tabloid}
@@ -439,7 +448,7 @@
             />
          </div>
          <div class="space-y-1">
-            <label for="majalah" class="font-medium">Jlh Majalah</label>
+            <label for="majalah" class="font-medium">Jlh Beli Majalah</label>
             <input
                required
                bind:value={active_peserta.majalah}
