@@ -6,7 +6,11 @@
     import dayjs from "dayjs";
     import { goto } from "$app/navigation";
 
-    export let path = "/pemuda";
+    export let path = "/home";
+
+    let website = localStorage.getItem("website")
+      ? JSON.parse(localStorage.getItem("website"))
+      : {}; 
 
     let active_dropdown_menu = ""; 
     let active_mobile_menu = location.pathname;
@@ -23,18 +27,32 @@
                 {
                     path: "/anggota",
                     title: "Anggota",
+                    show : true
                 },
                 {
                     path: "/hu",
                     title: "HU",
+                    show : website.User == "Rijal"
                 },
+                {
+                    path: "/hp",
+                    title: "HP / IM",
+                    show : website.User == "Nisa"
+                },
+                {
+                    path: "/ia",
+                    title: "IA",
+                    show : website.User == "Nisa"
+                }, 
                 {
                     path: "/upgrade",
                     title: "Upgrade",
+                    show : true
                 },
                 {
                     path: "/mutasi",
                     title: "Mutasi",
+                    show : true
                 },
             ],
         },
@@ -45,26 +63,32 @@
                 {
                     path: "/hm",
                     title: "HM",
+                    show : true
                 }, 
                 {
                     path: "/mal",
                     title: "Mal",
+                    show : true
                 },
                 {
                     path: "/jadwal-hu",
                     title: "Jadwal HU",
-                },
+                    show : website.User == "Rijal"
+                }, 
                 {
-                    path: "/omoo",
-                    title: "Omoo",
-                },
+                    path: "/jadwal-hp",
+                    title: "Jadwal HP",
+                    show : website.User == "Nisa"
+                }, 
                 {
                     path: "/hs",
                     title: "HS",
+                    show : true,
                 },
                 {
                     path: "/jm",
                     title: "JM",
+                    show : true
                 },
             ],
         },
@@ -74,10 +98,12 @@
                 {
                     path: "/kontak",
                     title: "Kontak",
+                    show : true,
                 },
                 {
                     path: "/daurah",
                     title: "Daurah",
+                    show : website.User == "Rijal"
                 },
             ],
         },
@@ -87,18 +113,32 @@
                 {
                     path: "/ku",
                     title: "KU",
+                    show : website.User == "Rijal"
                 },
                 {
                     path: "/kr",
                     title: "KR",
+                    show : website.User == "Rijal"
                 },
                 {
                     path: "/kj",
                     title: "KJ",
+                    show : website.User == "Rijal"
                 },
                 {
                     path: "/km",
                     title: "KM",
+                    show : website.User == "Rijal"
+                },
+                {
+                    path: "/mt",
+                    title: "MT",
+                    show : website.User == "Nisa"
+                },
+                {
+                    path: "/pu",
+                    title: "PU",
+                    show : website.User == "Nisa"
                 },
             ],
         },
@@ -109,18 +149,22 @@
                 {
                     path: "/rapat",
                     title: "Rapat",
+                    show : true
                 },
                 {
                     path: "/anggaran",
                     title: "Anggaran",
+                    show : true
                 },
                 {
                     path: "/admin",
                     title: "Admin",
+                    show : true
                 },
                 {
                     path: "/laporan",
                     title: "Laporan",
+                    show : true
                 },
             ],
         },
@@ -199,7 +243,7 @@
                                 role="menu"
                             >
                                 <div class="p-2">
-                                    {#each menu.submenu as item}
+                                    {#each menu.submenu.filter(item=>item.show) as item}
                                         <a
                                             href={item.path}
                                             class="block rounded-lg px-4 py-2 text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-700"

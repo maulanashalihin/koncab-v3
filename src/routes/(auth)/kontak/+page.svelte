@@ -1,9 +1,6 @@
 <script>
    import Modal from "../../../Components/Modal.svelte";
-   import {
-      generateRandomString,
-      generateUUID,
-   } from "../../../Components/helper";
+ 
    import dayjs from "dayjs";
    import { Log, db, pubsub } from "../../../Database/schema";
    import { onMount } from "svelte";
@@ -16,6 +13,11 @@
    let active_kontak = {};
 
    let pengontak = [];
+
+   let website = localStorage.getItem("website")
+      ? JSON.parse(localStorage.getItem("website"))
+      : {}; 
+
 
    async function Loadkontak() {
       kontak = await db.kontak
@@ -202,8 +204,13 @@
          >
             <option value="Target">Target</option>
             <option value="Prospek">Prospek</option>
-            <option value="Deal">Deal (Ikut Training)</option>
+            {#if website.User == "Rijal"}
+            <option value="Deal">Deal (Ikut Daurah)</option>
             <option value="Sukses">Sukses (Jadi HU)</option>
+            {:else}
+            <option value="Sukses">Sukses (IM)</option>
+            {/if}
+           
             <option value="Mundur">Mundur</option>
          </select>
       </div>

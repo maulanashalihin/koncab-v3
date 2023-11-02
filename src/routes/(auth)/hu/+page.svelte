@@ -69,6 +69,7 @@
                status: action,
                createdAt: dayjs().format("YYYY-MM-DD"),
             };
+            
             db.upgrade.put(upgrade_data);
             Log("upgrade", upgrade_data);
 

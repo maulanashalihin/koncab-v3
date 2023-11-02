@@ -46,6 +46,10 @@
 
    let end_date = dayjs().add(1, "month").set("date", 20).format("YYYY-MM-DD");
 
+   let website = localStorage.getItem("website")
+      ? JSON.parse(localStorage.getItem("website"))
+      : {};
+
    async function LoadData() {
       groups = await db.groups.toArray();
    }
@@ -169,6 +173,7 @@
                   kontak: item.kontak,
                   kontak_index: item.kontak ? 1 : 0,
                   buletin_fisik: item.buletin_fisik,
+                  buletin_kontak: item.buletin_kontak,
                   buletin_digital: item.buletin_digital,
                   leaflet: item.leaflet,
                   buletin: item.buletin_fisik + item.buletin_digital,
@@ -247,6 +252,7 @@
             kontak_index: item.kontak ? 1 : 0,
             buletin_fisik: item.buletin_fisik,
             buletin_digital: item.buletin_digital,
+            buletin_kontak: item.buletin_kontak,
             leaflet: item.leaflet,
             buletin: item.buletin_fisik + item.buletin_digital,
             tanggal: presence_week.tanggal,
@@ -981,6 +987,20 @@
                               placeholder="5"
                            />
                         </div>
+                       {#if website.User == "Nisa"}
+                       <div class="space-y-1">
+                        <label for="buletin_kontak" class="font-medium"
+                           >Buletin Kontak</label
+                        >
+                        <input
+                           bind:value={item.buletin_kontak}
+                           class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
+                           type="number"
+                           id="buletin_kontak"
+                           placeholder="5"
+                        /> 
+                     </div>
+                       {/if}
                         <div class="space-y-1">
                            <label for="leaflet" class="font-medium"
                               >Leaflet (Nasyrah)</label
