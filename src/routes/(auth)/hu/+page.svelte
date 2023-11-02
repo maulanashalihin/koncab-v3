@@ -7,6 +7,8 @@
 
    let hu = [];
 
+   let clone_hu = [];
+
    let active_hu = {};
 
    let guru = [];
@@ -18,8 +20,12 @@
    let action = "";
 
    async function Loadhu() {
-      hu = await db.hu.toArray();
-      guru = await db.peserta.toArray();
+      hu = await db.hu.reverse().sortBy("createdAt");
+
+      clone_hu = hu;
+
+      guru = await db.peserta.orderBy("name").toArray();
+
       list_contacts = await db.kontak
          .where("status")
          .equals("Sukses")
@@ -35,13 +41,15 @@
 
    function savehu() {
       if (active_hu.id) {
-
          if (is_mundur) {
             active_hu.status = "Mundur";
          }
+         if (active_hu.createdAt == undefined) {
+            active_hu.createdAt = dayjs().format("YYYY-MM-DD");
+         }
+         active_hu.updatedAt = dayjs().format("YYYY-MM-DD");
 
          db.hu.put(active_hu);
-        
 
          if (action == "HU ke CP") {
             const upgrade_data = {
@@ -75,6 +83,7 @@
          }
       } else {
          active_hu.id = active_hu.name;
+         active_hu.createdAt = dayjs().format("YYYY-MM-DD");
          db.hu.add(active_hu);
 
          if (action == "HU Baru") {
@@ -97,6 +106,27 @@
    pubsub.subscribe("hu", () => {
       Loadhu();
    });
+
+   let search = "";
+
+   function DoingSearch() {
+      if (search == "") {
+         hu = clone_hu;
+      } else {
+         const lower_search = search.toLowerCase();
+
+         hu = clone_hu.filter((item) => {
+           
+
+            return (
+               item.name.toLowerCase().includes(lower_search) ||
+               item.status.toLowerCase().includes(lower_search) ||
+               (item.guru || '').toLowerCase().includes(lower_search) ||
+               (item.hari || '').toLowerCase().includes(lower_search)
+            );
+         });
+      }
+   }
 </script>
 
 <div>
@@ -126,6 +156,15 @@
       </div>
 
       <div class="mt-10 overflow-x-auto">
+         <div class="w-96 max-w-full mb-3">
+            <input
+               bind:value={search}
+               on:input={DoingSearch}
+               class="px-3 py-2 border outline-none focus:border-orange-400"
+               type="text"
+               placeholder="Search"
+            />
+         </div>
          {#if hu.length}
             <table
                class="min-w-full divide-y-2 divide-gray-200 bg-white text-sm"
@@ -145,6 +184,9 @@
                         Guru
                      </th>
                      <th class="text-left px-4 py-2 font-medium text-gray-900">
+                        Mulai
+                     </th>
+                     <th class="text-left px-4 py-2 font-medium text-gray-900">
                         Notes
                      </th>
                   </tr>
@@ -161,26 +203,33 @@
                         <td class="whitespace-nowrap px-4 py-2 text-gray-700"
                            >{item.status}</td
                         >
-                        <td class="whitespace-nowrap px-4 py-2 text-gray-700"
-                           >{item.pertemuan || "-"}</td
+                        <td class="whitespace-nowrap px-4 py-2 text-gray-700">
+                           {item.hari || ""}
+                           {item.jam || ""}
+                           {item.pertemuan ? `(${item.pertemuan})` : ""}</td
                         >
                         <td class="whitespace-nowrap px-4 py-2 text-gray-700"
                            >{item.guru || "-"}</td
+                        >
+                        <td class="whitespace-nowrap px-4 py-2 text-gray-700"
+                           >{item.createdAt || "-"}</td
                         >
                         <td class="whitespace-nowrap px-4 py-2 text-gray-700">
                            {item.note}</td
                         >
                         <td class="whitespace-nowrap px-4 py-2 text-gray-700">
-                           <button
-                              type="button"
-                              on:click={() => {
-                                 active_hu = item;
-                                 edithuModal = true;
-                                 action = "";
-                              }}
-                              class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                              >Edit</button
-                           >
+                           {#if item.status == "HU" || item.status == "CP"}
+                              <button
+                                 type="button"
+                                 on:click={() => {
+                                    active_hu = item;
+                                    edithuModal = true;
+                                    action = "";
+                                 }}
+                                 class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded"
+                                 >Edit</button
+                              >
+                           {/if}
                            {#if item.status == "HU"}
                               <button
                                  type="button"
@@ -193,7 +242,7 @@
                                     action = "HU ke CP";
                                     edithuModal = true;
                                  }}
-                                 class="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded"
+                                 class="bg-orange-500 hover:bg-orange-700 text-white font-bold py-1 px-2 rounded"
                                  >Upgrade ke CP</button
                               >
                            {/if}
@@ -209,7 +258,7 @@
                                     action = "CP ke P";
                                     edithuModal = true;
                                  }}
-                                 class="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded"
+                                 class="bg-orange-500 hover:bg-orange-700 text-white font-bold py-1 px-2 rounded"
                                  >Upgrade ke P</button
                               >
                            {/if}
@@ -284,6 +333,31 @@
             />
          </div>
       {/if}
+
+      <div class="space-y-1">
+         <label for="hari" class="font-medium">Hari</label>
+         <select
+            required
+            bind:value={active_hu.hari}
+            class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
+            id="hari"
+         >
+            {#each ["Ahad", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"] as item}
+               <option value={item}>{item}</option>
+            {/each}
+         </select>
+      </div>
+      <div class="space-y-1">
+         <label for="jam" class="font-medium">Jam</label>
+
+         <input
+            type="time"
+            id="jam"
+            bind:value={active_hu.jam}
+            name="jam"
+            class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
+         />
+      </div>
 
       <div class="space-y-1">
          <label for="pertemuan" class="font-medium">Catatan</label>

@@ -51,6 +51,10 @@
                     title: "Mal",
                 },
                 {
+                    path: "/jadwal-hu",
+                    title: "Jadwal HU",
+                },
+                {
                     path: "/omoo",
                     title: "Omoo",
                 },

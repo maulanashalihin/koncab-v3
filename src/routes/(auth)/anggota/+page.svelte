@@ -1,14 +1,16 @@
 <script>
    import { split } from "postcss/lib/list";
    import Modal from "../../../Components/Modal.svelte";
-   import {
-      MediaPrice,
-      dataToJSON,
-      generateUUID,
+   import { 
+      dataToJSON, 
    } from "../../../Components/helper";
    import { Log, db, pubsub } from "../../../Database/schema";
 
+   let search = "";
+
    let peserta = [];
+
+   let clone_peserta = [];
 
    let groups = [];
 
@@ -25,6 +27,7 @@
  
    async function Loadpeserta() {
       peserta = await db.peserta.toArray();
+      clone_peserta = peserta;
    }
 
    (async () => {
@@ -91,6 +94,26 @@
       Loadpeserta();
       bulk_add_modal = false;
    }
+
+   function DoingSearch()
+   {
+    
+      if(search == "")
+      {
+         peserta = clone_peserta;
+      }else{
+
+         const lower_search = search.toLowerCase();
+
+         peserta = clone_peserta.filter(item => {
+
+            const modul = item.modul || "";
+
+            return item.name.toLowerCase().includes(lower_search) || item.status.toLowerCase().includes(lower_search) || modul.toLowerCase().includes(lower_search) ;
+         })
+      }
+      
+   }
 </script>
 
 <div>
@@ -111,7 +134,11 @@
       </div>
 
       <div class="mt-10 overflow-x-auto">
+         <div class="w-96 max-w-full mb-3">
+            <input bind:value="{search}" on:input="{DoingSearch}" class="px-3 py-2 border outline-none focus:border-orange-400" type="text" placeholder="Search">
+         </div>
          {#if peserta.length}
+           
             <table
                class="min-w-full divide-y-2 divide-gray-200 bg-white text-sm"
             >

@@ -149,7 +149,7 @@
       presences = [];
       presences = await db.presences.where({ week_id: id }).toArray();
 
-      console.log(selected_peserta)
+      
       if (presences.length < selected_peserta.length) {
          for await (let item of selected_peserta) {
             const presence = presences.find((i) => i.peserta_id == item.id);
@@ -453,6 +453,14 @@
             history_data.length
       );
    }
+
+   async function removeGroup()
+   {
+      await db.groups.delete(active_group.id);
+      groups = groups.filter((item) => item.id != active_group.id);
+      Log("groups", active_group, "delete");
+      editGroupModal = false;
+   }
 </script>
 
 <div>
@@ -753,6 +761,9 @@
          class="inline-flex justify-center items-center space-x-2 border font-semibold focus:outline-none w-full px-4 py-3 leading-6 rounded border-yellow-500 bg-yellow-500 text-white hover:text-white hover:bg-yellow-800 hover:border-yellow-800 focus:ring focus:ring-yellow-500 focus:ring-opacity-50 active:bg-yellow-700 active:border-yellow-700"
       >
          Simpan
+      </button>
+      <button on:click="{removeGroup}" type="button" class="bg-red-50 w-full text-red-500 text-sm px-3 py-2">
+         Hapus Kelompok
       </button>
    </form>
 </Modal>

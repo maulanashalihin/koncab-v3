@@ -1,4 +1,5 @@
 <script>
+   import { onMount } from "svelte";
    import Modal from "../../../Components/Modal.svelte";
    import { generateUUID } from "../../../Components/helper";
    import { Log, db, pubsub } from "../../../Database/schema";
@@ -7,12 +8,22 @@
 
    let active_mutasi = {};
 
+   let start_date = dayjs().subtract(1, "month").format("YYYY-MM-DD");
+   let end_date = dayjs().format("YYYY-MM-DD");
+
    let status = "P";
 
    let peserta = [];
 
    async function Loadmutasi() {
-      mutasi = await db.mutasi.toArray();
+      mutasi = await db.mutasi
+         .where("createdAt")
+         .between(
+            start_date,
+            dayjs(end_date).add(1, "day").format("YYYY-MM-DD")
+         )
+         .reverse()
+         .sortBy("createdAt");
       peserta = await db.peserta.toArray();
    }
 
@@ -65,6 +76,35 @@
    pubsub.subscribe("mutasi", () => {
       Loadmutasi();
    });
+
+   onMount(() => {
+      setTimeout(() => {
+         // @ts-ignore
+         const picker = new easepick.create({
+            element: document.getElementById("datepicker"),
+            css: [
+               "https://cdn.jsdelivr.net/npm/@easepick/core@1.2.1/dist/index.css",
+               "https://cdn.jsdelivr.net/npm/@easepick/range-plugin@1.2.1/dist/index.css",
+            ],
+            plugins: ["RangePlugin"],
+            RangePlugin: {
+               tooltip: true,
+            },
+            setup(picker) {
+               picker.on("select", (e) => {
+                  const { end, start } = e.detail;
+                  start_date = dayjs(start).format("YYYY-MM-DD");
+                  end_date = dayjs(end).format("YYYY-MM-DD");
+                  Loadmutasi();
+                  // do something
+               });
+            },
+         });
+
+         picker.setDateRange(start_date, end_date);
+         Loadmutasi();
+      }, 100);
+   });
 </script>
 
 <div>
@@ -81,7 +121,7 @@
             on:click={() => {
                editmutasiModal = true;
                active_mutasi = {
-                  name : ""
+                  name: "",
                };
             }}
             class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
@@ -90,6 +130,13 @@
       </div>
 
       <div class="mt-10 overflow-x-auto">
+         <div class="lg:w-96 max-w-full mb-3">
+            <input
+               id="datepicker"
+               class="px-3 py-2 w-full border outline-none focus:border-orange-400"
+               type="text"
+            />
+         </div>
          {#if mutasi.length}
             <table
                class="min-w-full divide-y-2 divide-gray-200 bg-white text-sm"
@@ -130,9 +177,7 @@
                         <td class="whitespace-nowrap px-4 py-2 text-gray-700">
                            {item.note || ""}</td
                         >
-                        <td class="whitespace-nowrap px-4 py-2 text-gray-700">
-                           
-                        </td>
+                        <td class="whitespace-nowrap px-4 py-2 text-gray-700" />
                      </tr>
                   {/each}
                </tbody>

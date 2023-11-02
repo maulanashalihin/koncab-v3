@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="utf-8" />
+      <link rel="icon" href="./favicon.png" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/dexie/3.2.4/dexie.min.js"></script>
+      <link
+         rel="stylesheet"
+         type="text/css"
+         href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"
+      />
+      <script
+         type="text/javascript"
+         src="https://cdn.jsdelivr.net/npm/toastify-js"
+      ></script>
+      <script src="https://cdn.jsdelivr.net/npm/@easepick/datetime@1.2.1/dist/index.umd.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/@easepick/core@1.2.1/dist/index.umd.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/@easepick/base-plugin@1.2.1/dist/index.umd.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/@easepick/range-plugin@1.2.1/dist/index.umd.min.js"></script>
+      <title>Koncab</title>
+
+      
+		<link rel="modulepreload" href="./_app/immutable/entry/start.cc83078e.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/scheduler.128a5e20.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/singletons.14bae48f.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/index.92bc6f66.js">
+		<link rel="modulepreload" href="./_app/immutable/entry/app.dae05fa0.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/index.52f559ae.js">
+   </head>
+   <body data-sveltekit-preload-data="hover">
+      <div style="display: contents">
+			<script>
+				{
+					__sveltekit_1kmh94g = {
+						base: new URL(".", location).pathname.slice(0, -1),
+						env: {}
+					};
+
+					const element = document.currentScript.parentElement;
+
+					Promise.all([
+						import("./_app/immutable/entry/start.cc83078e.js"),
+						import("./_app/immutable/entry/app.dae05fa0.js")
+					]).then(([kit, app]) => {
+						kit.start(app, element);
+					});
+				}
+			</script>
+		</div>
+   </body>
+</html>
