@@ -86,7 +86,9 @@
                                  >
                                  <td
                                     class="whitespace-nowrap px-4 py-2 text-gray-700"
-                                    >{item.pertemuan || "-"}</td
+                                    >  {item.hari || ""}
+                                    {item.jam || ""}
+                                    {item.pertemuan ? `(${item.pertemuan})` : ""}</td
                                  >
                                  <td
                                     class="whitespace-nowrap px-4 py-2 text-gray-700"
