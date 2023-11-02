@@ -72,7 +72,10 @@
          (item) => item.id == active_group.guru_id
       ).name;
 
+      active_group.peserta = selected_peserta;
+
       if (active_group.id) {
+       
          db.groups.put(active_group);
 
          Log("groups", active_group);
@@ -117,7 +120,6 @@
    }
 
    async function LoadPresence() {
-      
       const id =
          dayjs(tanggal).week() +
          ":" +
@@ -130,7 +132,7 @@
       presence_week = await db.presence_week.get(id);
 
       if (!presence_week) {
-         presence_week = {}; 
+         presence_week = {};
 
          presence_week.status = "Terlaksana";
          presence_week.halaman = active_group.halaman;
@@ -138,18 +140,15 @@
          presence_week.kalimat = active_group.kalimat;
          presence_week.group_id = active_group.id;
          presence_week.modul = active_group.modul;
-         
+
          presence_week.meeting_time = 120;
          presence_week.tanggal = tanggal;
          presence_week.id = id;
       }
 
-       
-
       presences = [];
       presences = await db.presences.where({ week_id: id }).toArray();
 
-      
       if (presences.length < selected_peserta.length) {
          for await (let item of selected_peserta) {
             const presence = presences.find((i) => i.peserta_id == item.id);
@@ -184,7 +183,6 @@
 
    async function savePresence() {
       if (presence_week.tanggal > active_group.last_meet) {
-
          active_group.last_meet = presence_week.tanggal;
          active_group.halaman = presence_week.halaman;
          active_group.kalimat = presence_week.kalimat;
@@ -454,8 +452,7 @@
       );
    }
 
-   async function removeGroup()
-   {
+   async function removeGroup() {
       await db.groups.delete(active_group.id);
       groups = groups.filter((item) => item.id != active_group.id);
       Log("groups", active_group, "delete");
@@ -565,17 +562,17 @@
                                  <th
                                     class="text-left px-4 py-2 font-medium text-gray-900"
                                  >
-                                    Modul
+                                    Modul / Hlm
                                  </th>
                                  <th
                                     class="text-left px-4 py-2 font-medium text-gray-900"
                                  >
-                                    Halaman
+                                    Peserta
                                  </th>
                                  <th
                                     class="text-left px-4 py-2 font-medium text-gray-900"
                                  >
-                                    Pertemuan Terakhir
+                                    Pertemuan
                                  </th>
                                  <th
                                     class="text-left px-4 py-2 font-medium text-gray-900"
@@ -601,15 +598,28 @@
                                     >
                                     <td
                                        class="whitespace-nowrap px-4 py-2 text-gray-700"
-                                       >{item.modul}</td
-                                    >
-                                    <td
-                                       class="whitespace-nowrap px-4 py-2 text-gray-700"
-                                       >{item.halaman}
+                                       >{item.modul}
+                                       {item.halaman ? `(${item.halaman})` : ""}
                                        {item.kalimat
                                           ? `(${item.kalimat})`
                                           : ""}</td
                                     >
+                                    <td
+                                       class="whitespace-nowrap px-4 py-2 text-gray-700"
+                                    >
+                                      
+                                          {#if item.peserta}
+                                          
+                                             {#each item.peserta as peserta}
+                                             <span
+                                             class="whitespace-nowrap rounded-full bg-purple-100 px-2.5 py-0.5 text-sm text-purple-700"
+                                          >
+                                                {peserta.label}
+                                             </span>
+                                             {/each}
+                                          {/if}
+                                
+                                    </td>
                                     <td
                                        class="whitespace-nowrap px-4 py-2 text-gray-700"
                                        >{item.last_meet || "-"}</td
@@ -633,8 +643,21 @@
                                                 }));
                                           }}
                                           class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                                          >Edit</button
-                                       >
+                                          ><svg
+                                             xmlns="http://www.w3.org/2000/svg"
+                                             fill="none"
+                                             viewBox="0 0 24 24"
+                                             stroke-width="1.5"
+                                             stroke="currentColor"
+                                             class="w-6 h-6"
+                                          >
+                                             <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
+                                             />
+                                          </svg>
+                                       </button>
 
                                        <button
                                           type="button"
@@ -645,8 +668,21 @@
                                              LoadPresence();
                                           }}
                                           class="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded"
-                                          >+ Absen</button
-                                       >
+                                          ><svg
+                                             xmlns="http://www.w3.org/2000/svg"
+                                             fill="none"
+                                             viewBox="0 0 24 24"
+                                             stroke-width="1.5"
+                                             stroke="currentColor"
+                                             class="w-6 h-6"
+                                          >
+                                             <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                             />
+                                          </svg>
+                                       </button>
                                        <button
                                           type="button"
                                           on:click={() => {
@@ -655,8 +691,21 @@
                                              loadHistory();
                                           }}
                                           class="bg-gray-100 hover:bg-gray-300 text-gray-500 font-bold py-2 px-4 rounded"
-                                          >History</button
-                                       >
+                                          ><svg
+                                             xmlns="http://www.w3.org/2000/svg"
+                                             fill="none"
+                                             viewBox="0 0 24 24"
+                                             stroke-width="1.5"
+                                             stroke="currentColor"
+                                             class="w-6 h-6"
+                                          >
+                                             <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
+                                             />
+                                          </svg>
+                                       </button>
                                     </td>
                                  </tr>
                               {/each}
@@ -723,8 +772,7 @@
             class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
             id="modul"
          >
-          
-            {#each ["NIS", "TAK", "MAF", "DAU", "AJH", "NIJ", "NIQ","AMW","SYA"] as item}
+            {#each ["NIS", "TAK", "MAF", "DAU", "AJH", "NIJ", "NIQ", "AMW", "SYA"] as item}
                <option value={item}>{item}</option>
             {/each}
          </select>
@@ -762,7 +810,11 @@
       >
          Simpan
       </button>
-      <button on:click="{removeGroup}" type="button" class="bg-red-50 w-full text-red-500 text-sm px-3 py-2">
+      <button
+         on:click={removeGroup}
+         type="button"
+         class="bg-red-50 w-full text-red-500 text-sm px-3 py-2"
+      >
          Hapus Kelompok
       </button>
    </form>
@@ -782,21 +834,21 @@
          />
       </div>
       {#if presence_week && presence_week.status}
-      <div class="space-y-1">
-         <label for="status" class="font-medium">Status</label>
-         <select
-            required
-            bind:value={presence_week.status}
-            class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
-            id="modul"
-         >
-            <option value="Terlaksana">Terlaksana</option>
-            <option value="Laporan tidak masuk">Laporan tidak masuk</option>
-            <option value="Kosong">Kosong</option>
-         </select>
-      </div>
+         <div class="space-y-1">
+            <label for="status" class="font-medium">Status</label>
+            <select
+               required
+               bind:value={presence_week.status}
+               class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
+               id="modul"
+            >
+               <option value="Terlaksana">Terlaksana</option>
+               <option value="Laporan tidak masuk">Laporan tidak masuk</option>
+               <option value="Kosong">Kosong</option>
+            </select>
+         </div>
       {/if}
-      
+
       {#if presence_week && presence_week.status == "Terlaksana"}
          <div class="space-y-1">
             <label for="modul" class="font-medium">Modul</label>
