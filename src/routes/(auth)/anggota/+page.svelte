@@ -1,8 +1,8 @@
 <script>
-   import { split } from "postcss/lib/list";
+   import dayjs from "dayjs";
    import Modal from "../../../Components/Modal.svelte";
    import { 
-      dataToJSON, 
+      dataToJSON, generateUUID, 
    } from "../../../Components/helper";
    import { Log, db, pubsub } from "../../../Database/schema";
 
@@ -41,17 +41,40 @@
 
    let editpesertaModal = false;
 
-   function savepeserta() {
+   async function savepeserta() {
       active_peserta.guru_index = active_peserta.is_guru ? 1 : 0;
     
 
       if (active_peserta.id) {
-         db.peserta.put(active_peserta);
+         
+
+         const check = await db.peserta.get(active_peserta.id);
+
+         if(check && check.status == "P" && active_peserta.status == "K")
+         {
+            const upgrade_data = {
+               id: generateUUID(),
+               name: active_peserta.name,
+               status: "P ke K",
+               createdAt: dayjs().format("YYYY-MM-DD"),
+            };
+            
+            await db.upgrade.put(upgrade_data);
+
+            Log("upgrade", upgrade_data);
+            console.log("upgrade P ke K")
+         }
+
+         await db.peserta.put(active_peserta);
+
          Log("peserta", active_peserta);
+      
+
+
       } else {
          active_peserta.id = active_peserta.name;
          active_peserta.total_spp = 0 ;
-         db.peserta.add(active_peserta);
+         await  db.peserta.add(active_peserta);
          Log("peserta", active_peserta);
       }
       editpesertaModal = false;

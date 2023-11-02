@@ -41,6 +41,14 @@
       Loadupgrade();
    });
 
+   function deleteUpgrade()
+   {
+      db.upgrade.delete(active_upgrade.id);
+      editupgradeModal = false;
+      Loadupgrade();
+      Log("upgrade", active_upgrade,"delete");
+   }
+
    onMount(() => {
       setTimeout(() => {
          // @ts-ignore
@@ -156,31 +164,7 @@
 
 <Modal width="max-w-lg" bind:show={editupgradeModal} title="Edit upgrade">
    <form on:submit|preventDefault={saveupgrade} class="p-4 space-y-4">
-      <div class="space-y-1">
-         <label for="name" class="font-medium">Nama</label>
-         <input
-            required
-            bind:value={active_upgrade.name}
-            class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
-            type="text"
-            id="name"
-            placeholder="Masukan Nama"
-         />
-      </div>
-      <div class="space-y-1">
-         <label for="status" class="font-medium">Status</label>
-         <select
-            required
-            bind:value={active_upgrade.status}
-            class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
-            id="status"
-         >
-            <option value="HU Baru">HU Baru</option>
-            <option value="HU ke CP">HU ke CP</option>
-            <option value="CP ke P">CP ke P</option>
-            <option value="P ke K">P ke K</option>
-         </select>
-      </div>
+      
 
       <div class="space-y-1">
          <label for="pertemuan" class="font-medium">Catatan</label>
@@ -197,6 +181,9 @@
          class="inline-flex justify-center items-center space-x-2 border font-semibold focus:outline-none w-full px-4 py-3 leading-6 rounded border-yellow-500 bg-yellow-500 text-white hover:text-white hover:bg-yellow-800 hover:border-yellow-800 focus:ring focus:ring-yellow-500 focus:ring-opacity-50 active:bg-yellow-700 active:border-yellow-700"
       >
          Simpan
+      </button>
+      <button on:click="{deleteUpgrade}" type="button" class="bg-red-50 w-full text-red-500 text-sm px-3 py-2">
+         Hapus Upgrade
       </button>
    </form>
 </Modal>
