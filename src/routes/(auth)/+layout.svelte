@@ -314,7 +314,7 @@
                             {menu.title}
                         </div>
 
-                        {#each menu.submenu as item}
+                        {#each menu.submenu.filter(item=>item.show) as item}
                             <a
                                 href={item.path}
                                 on:click={() => {
