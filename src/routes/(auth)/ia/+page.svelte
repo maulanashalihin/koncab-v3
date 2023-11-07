@@ -1,106 +1,101 @@
 <script>
-   import { stringify } from "postcss";
+   import { onMount } from "svelte";
    import Modal from "../../../Components/Modal.svelte";
    import { generateUUID } from "../../../Components/helper";
    import { Log, db, pubsub } from "../../../Database/schema";
    import dayjs from "dayjs";
-
    let ia = [];
 
-   let clone_ia = [];
+   let start_date = dayjs().subtract(1, "month").format("YYYY-MM-DD");
+   let end_date = dayjs().format("YYYY-MM-DD");
 
-   let active_ia = {};
+   let active_upgrade = {};
 
-   let guru = [];
-
-   let list_contacts = [];
-
-   let is_mundur = false;
-
-   let action = "";
-
-   async function Loadia() {
-      ia = await db.ia.reverse().sortBy("createdAt");
-
-      clone_ia = ia;
-
-      guru = await db.peserta.orderBy("name").toArray();
-
-      list_contacts = await db.kontak
-         .where("status")
-         .equals("Sukses")
-         .toArray();
-      list_contacts = list_contacts.filter((item) => {
-         return !ia.find((ia) => ia.name == item.name);
-      });
+   async function Loadupgrade() {
+      ia = await db.ia
+         .where("createdAt")
+         .between(
+            start_date,
+            dayjs(end_date).add(1, "day").format("YYYY-MM-DD")
+         )
+         .reverse()
+         .sortBy("createdAt");
    }
 
-   Loadia();
+   let editupgradeModal = false;
 
-   let editiaModal = false;
-
-   function saveia() {
-      if (active_ia.id) {
-        
-         active_ia.updatedAt = dayjs().format("YYYY-MM-DD");
-
-         db.ia.put(active_ia);
-
-           
+   function saveupgrade() {
+      if (active_upgrade.id) {
+         db.ia.put(active_upgrade);
       } else {
-        
+         active_upgrade.id = generateUUID();
+         active_upgrade.createdAt = dayjs().format("YYYY-MM-DD");
+         db.ia.add(active_upgrade);
       }
-      Log("ia", active_ia);
-      editiaModal = false;
-      Loadia();
+      Log("ia", active_upgrade);
+      editupgradeModal = false;
+      Loadupgrade();
    }
 
    pubsub.subscribe("ia", () => {
-      Loadia();
+      Loadupgrade();
    });
 
-   let search = "";
-
-   function DoingSearch() {
-      if (search == "") {
-         ia = clone_ia;
-      } else {
-         const lower_search = search.toLowerCase();
-
-         ia = clone_ia.filter((item) => {
-           
-
-            return (
-               item.name.toLowerCase().includes(lower_search) ||
-               item.status.toLowerCase().includes(lower_search) ||
-               (item.guru || '').toLowerCase().includes(lower_search) ||
-               (item.hari || '').toLowerCase().includes(lower_search)
-            );
-         });
-      }
+   function deleteUpgrade()
+   {
+      db.ia.delete(active_upgrade.id);
+      editupgradeModal = false;
+      Loadupgrade();
+      Log("ia", active_upgrade,"delete");
    }
+
+   onMount(() => {
+      setTimeout(() => {
+         // @ts-ignore
+         const picker = new easepick.create({
+            element: document.getElementById("datepicker"),
+            css: [
+               "https://cdn.jsdelivr.net/npm/@easepick/core@1.2.1/dist/index.css",
+               "https://cdn.jsdelivr.net/npm/@easepick/range-plugin@1.2.1/dist/index.css",
+            ],
+            plugins: ["RangePlugin"],
+            RangePlugin: {
+               tooltip: true,
+            },
+            setup(picker) {
+               picker.on("select", (e) => {
+                  const { end, start } = e.detail;
+                  start_date = dayjs(start).format("YYYY-MM-DD");
+                  end_date = dayjs(end).format("YYYY-MM-DD");
+                  Loadupgrade();
+                  // do something
+               });
+            },
+         });
+
+         picker.setDateRange(start_date, end_date);
+         Loadupgrade();
+      }, 100);
+   });
 </script>
 
 <div>
    <!--
-    Heads up! 👋
-  
-    This component comes with some `rtl` classes. Please remove them if they are not needed in your project.
-  -->
-   <div class="">
+   Heads up! 👋
+ 
+   This component comes with some `rtl` classes. Please remove them if they are not needed in your project.
+ -->
+   <div class="max-w-7xl mx-auto">
       <div class="flex flex-col md:flex-row gap-3 md:justify-between">
          <div class="text-xl md:text-3xl">IA</div>
-    
       </div>
 
       <div class="mt-10 overflow-x-auto">
-         <div class="w-96 max-w-full mb-3">
+         <div class="lg:w-96 max-w-full mb-3">
             <input
-               bind:value={search}
-               on:input={DoingSearch}
-               class="px-3 py-2 border outline-none focus:border-orange-400"
+               id="datepicker"
+               class="px-3 py-2 w-full border outline-none focus:border-orange-400"
                type="text"
-               placeholder="Search"
             />
          </div>
          {#if ia.length}
@@ -110,13 +105,17 @@
                <thead class="ltr:text-left rtl:text-right">
                   <tr>
                      <th class="text-left px-4 py-2 font-medium text-gray-900">
+                        Tanggal
+                     </th>
+                     <th class="text-left px-4 py-2 font-medium text-gray-900">
                         Name
                      </th>
                      <th class="text-left px-4 py-2 font-medium text-gray-900">
                         Status
-                     </th> 
+                     </th>
+
                      <th class="text-left px-4 py-2 font-medium text-gray-900">
-                        Tanggal
+                        Notes
                      </th>
                   </tr>
                </thead>
@@ -124,6 +123,9 @@
                <tbody class="divide-y divide-gray-200">
                   {#each ia as item}
                      <tr>
+                        <td class="whitespace-nowrap px-4 py-2 text-gray-700"
+                           >{dayjs(item.createdAt).format("DD-MM-YYYY")}</td
+                        >
                         <td
                            class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
                         >
@@ -132,22 +134,20 @@
                         <td class="whitespace-nowrap px-4 py-2 text-gray-700"
                            >{item.status}</td
                         >
-                       
-                        <td class="whitespace-nowrap px-4 py-2 text-gray-700"
-                           >{item.createdAt || "-"}</td
-                        >
-                       
+
                         <td class="whitespace-nowrap px-4 py-2 text-gray-700">
-                           <!-- <button
-                           type="button"
-                           on:click={() => {
-                              active_ia = item;
-                              editiaModal = true;
-                              action = "";
-                           }}
-                           class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded"
-                           >Upgrade</button
-                        > -->
+                           {item.note || ""}</td
+                        >
+                        <td class="whitespace-nowrap px-4 py-2 text-gray-700">
+                           <button
+                              type="button"
+                              on:click={() => {
+                                 active_upgrade = item;
+                                 editupgradeModal = true;
+                              }}
+                              class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                              >Edit</button
+                           >
                         </td>
                      </tr>
                   {/each}
@@ -162,36 +162,28 @@
    </div>
 </div>
 
-<Modal width="max-w-lg" bind:show={editiaModal} title="Edit ia">
-   <form on:submit|preventDefault={saveia} class="p-4 space-y-4">
-      <div class="space-y-1">
-         <label for="name" class="font-medium">Nama</label>
-         <input
-         disabled
-         bind:value={active_ia.name}
-         class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
-         id="name"
-      />
-      </div>
-        
+<Modal width="max-w-lg" bind:show={editupgradeModal} title="Edit ia">
+   <form on:submit|preventDefault={saveupgrade} class="p-4 space-y-4">
       
 
       <div class="space-y-1">
          <label for="pertemuan" class="font-medium">Catatan</label>
          <textarea
-            bind:value={active_ia.note}
+            bind:value={active_upgrade.note}
             class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
             id="note"
             placeholder="Catatan"
          />
       </div>
 
- 
       <button
          type="submit"
          class="inline-flex justify-center items-center space-x-2 border font-semibold focus:outline-none w-full px-4 py-3 leading-6 rounded border-yellow-500 bg-yellow-500 text-white hover:text-white hover:bg-yellow-800 hover:border-yellow-800 focus:ring focus:ring-yellow-500 focus:ring-opacity-50 active:bg-yellow-700 active:border-yellow-700"
       >
          Simpan
+      </button>
+      <button on:click="{deleteUpgrade}" type="button" class="bg-red-50 w-full text-red-500 text-sm px-3 py-2">
+         Hapus Upgrade
       </button>
    </form>
 </Modal>

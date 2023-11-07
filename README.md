@@ -12,3 +12,10 @@
  5. sinkronisasi tangga perubahan data anggota
  6. tipe kontak : kontak terarah,  kontak umum dan kontak tokoh 
  7. hari dan jam HM ditampilkan dalam range mingguan
+
+ Kalimat Kontrol diganti dengan kunjungan
+ Kontak dihapus, langsung masuk IM
+ HP / IM dipisah 
+ PU itu per pekan
+ MTR 
+ MT dan PU ga bisa nambah data

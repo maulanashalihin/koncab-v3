@@ -18,7 +18,7 @@
    let action = "";
 
    async function Loadhu() {
-      hp = await db.hp.where("status").anyOfIgnoreCase("HP", "IM").toArray();
+      hp = await db.hp.toArray();
    }
 
    Loadhu();

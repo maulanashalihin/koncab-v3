@@ -1,62 +1,63 @@
 <script>
-   import Modal from "../../../Components/Modal.svelte"; 
+   import Modal from "../../../Components/Modal.svelte";
    import dayjs from "dayjs";
    import { Log, db, pubsub } from "../../../Database/schema";
-   import "dayjs/locale/id"; 
-  import { generateRandomString } from "../../../Components/helper";
+   import "dayjs/locale/id";
+   import { generateRandomString } from "../../../Components/helper";
 
-dayjs.locale("id"); 
-   let ku = [];
+   dayjs.locale("id");
+   let pu = [];
 
-   let active_ku = { 
-   };
- 
+   let active_mt = {};
 
-  
-
-   async function Loadku() {
-      ku = await db.ku.toArray();
+   async function Loadmt() {
+      pu = await db.pu.toArray();
    }
 
-   Loadku();
- 
+   Loadmt();
 
-   let editkuModal = false;
+   let editmtModal = false;
 
-   function saveku() {
-      active_ku.peserta = active_ku.list_peserta.length;
-      active_ku.bulan = dayjs(active_ku.tanggal).format("MMMM YYYY");
-      active_ku.id = dayjs(active_ku.tanggal).format("YYYY-MM-DD-")+generateRandomString(5);
-     
+   function savemt() {
+      active_mt.bulan = dayjs(active_mt.tanggal).format("MMMM YYYY");
+      if (active_mt.id) {
 
-      db.ku.put(active_ku);
+         db.pu.put(active_mt);
 
-      Log("ku", active_ku);
+      } else {
+         active_mt.id =
+            dayjs(active_mt.tanggal).format("YYYY-MM-DD-") +
+            generateRandomString(5);
 
-      editkuModal = false;
+         db.pu.add(active_mt);
+      }
 
-      Loadku();
+      Log("pu", active_mt);
+
+      editmtModal = false;
+
+      Loadmt();
    }
 
-   pubsub.subscribe("ku", () => {
-      Loadku();
+   pubsub.subscribe("pu", () => {
+      Loadmt();
    });
 </script>
 
 <div>
    <!--
-  Heads up! 👋
-
-  This component comes with some `rtl` classes. Please remove them if they are not needed in your project.
---> 
+   Heads up! 👋
+ 
+   This component comes with some `rtl` classes. Please remove them if they are not needed in your project.
+ -->
    <div class="max-w-7xl mx-auto">
       <div class="flex flex-col md:flex-row gap-3 md:justify-between">
          <div class="text-xl md:text-3xl">PU</div>
          <button
             on:click={() => {
-               editkuModal = true;
-               active_ku = {
-                   tanggal : dayjs().format("YYYY-MM-DD")
+               editmtModal = true;
+               active_mt = {
+                  tanggal: dayjs().format("YYYY-MM-DD"),
                };
             }}
             class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
@@ -65,7 +66,7 @@ dayjs.locale("id");
       </div>
 
       <div class="mt-10 overflow-x-auto">
-         {#if ku.length}
+         {#if pu.length}
             <table
                class="min-w-full divide-y-2 divide-gray-200 bg-white text-sm"
             >
@@ -87,9 +88,11 @@ dayjs.locale("id");
                </thead>
 
                <tbody class="divide-y divide-gray-200">
-                  {#each ku as item}
+                  {#each pu as item}
                      <tr>
-                       
+                        <td class="whitespace-nowrap px-4 py-2 text-gray-700"
+                           >{item.bulan || "-"}</td
+                        >
                         <td class="whitespace-nowrap px-4 py-2 text-gray-700"
                            >{item.tanggal || "-"}</td
                         >
@@ -103,8 +106,8 @@ dayjs.locale("id");
                            <button
                               type="button"
                               on:click={() => {
-                                 active_ku = item;
-                                 editkuModal = true;
+                                 active_mt = item;
+                                 editmtModal = true;
                               }}
                               class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                               >Edit</button
@@ -123,63 +126,62 @@ dayjs.locale("id");
    </div>
 </div>
 
-<Modal width="max-w-lg" bind:show={editkuModal} title="Edit pu">
-   <form on:submit|preventDefault={saveku} class="p-4 space-y-4">
+<Modal width="max-w-lg" bind:show={editmtModal} title="Edit pu">
+   <form on:submit|preventDefault={savemt} class="p-4 space-y-4">
       <div class="space-y-1">
          <label for="tanggal" class="font-medium">Tanggal</label>
          <input
             required
-            bind:value={active_ku.tanggal}
+            bind:value={active_mt.tanggal}
             class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
             type="date"
             id="tanggal"
          />
       </div>
       <div class="space-y-1">
-        <label for="jenis" class="font-medium">Jenis</label>
-        <select
-           required
-           bind:value={active_ku.jenis}
-           class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
-           id="jenis"
-        >
-           {#each ["Offline","Online"] as item}
-              <option value={item}>{item}</option>
-           {/each}
-        </select>
-     </div>
+         <label for="jenis" class="font-medium">Jenis</label>
+         <select
+            required
+            bind:value={active_mt.jenis}
+            class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
+            id="jenis"
+         >
+            {#each ["Offline", "Online"] as item}
+               <option value={item}>{item}</option>
+            {/each}
+         </select>
+      </div>
       <div class="space-y-1">
-       <label for="pembicara" class="font-medium">Pembicara</label>
-       <input
-          required
-          bind:value={active_ku.pembicara}
-          class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
-          type="text"
-          id="pembicara"
-             placeholder="Tuliskan nama pembicara"
-       />
-    </div>
+         <label for="pembicara" class="font-medium">Pembicara</label>
+         <input
+            required
+            bind:value={active_mt.pembicara}
+            class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
+            type="text"
+            id="pembicara"
+            placeholder="Tuliskan nama pembicara"
+         />
+      </div>
       <div class="space-y-1">
          <label for="note" class="font-medium">Catatan</label>
          <textarea
-            bind:value={active_ku.note}
+            bind:value={active_mt.note}
             class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
-           
             id="note"
             placeholder="Catatan"
          />
       </div>
       <div class="space-y-1">
-       <label for="peserta" class="font-medium">Peserta</label>
-       <input
-          required
-          bind:value={active_ku.peserta}
-          class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
-          type="number"
-          id="peserta"
-          placeholder="Tuliskan jumlah peserta"
-       />
-    </div>
+         <label for="peserta" class="font-medium">Peserta</label>
+         <input
+            required
+            bind:value={active_mt.peserta}
+            class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
+            type="number"
+            id="peserta"
+            placeholder="Tuliskan jumlah peserta"
+         />
+      </div>
 
       <button
          type="submit"

@@ -36,7 +36,7 @@
                 },
                 {
                     path: "/hp",
-                    title: "HP / IM",
+                    title: "HP",
                     show : website.User == "Nisa"
                 },
                 {
@@ -96,9 +96,14 @@
             title: "Rekrutmen",
             submenu: [
                 {
+                    path: "/im",
+                    title: "IM",
+                    show : website.User == "Nisa"
+                },
+                {
                     path: "/kontak",
                     title: "Kontak",
-                    show : true,
+                    show : website.User == "Rijal"
                 },
                 {
                     path: "/daurah",

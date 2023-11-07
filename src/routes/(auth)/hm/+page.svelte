@@ -959,7 +959,7 @@
                                  bind:checked={item.kontrol}
                               />
                            </div>
-                           <label for={item.id + "kontrol"}>Kontrol</label>
+                           <label for={item.id + "kontrol"}>{website.User == "Rijal" ? 'Kontrol' : 'Kunjungan'}</label>
                         </div>
                      </div>
                      <div class="grid grid-cols-2 w-full gap-3">

@@ -10,32 +10,37 @@
 
    let active_kj = {};
 
-   async function Loadkj() {
+   async function Loadmt() {
       kj = await db.kj.toArray();
    }
 
-   Loadkj();
+   Loadmt();
 
-   let editkjModal = false;
+   let editmtModal = false;
 
-   function savekj() {
-      active_kj.peserta = active_kj.list_peserta.length;
+   function savemt() {
       active_kj.bulan = dayjs(active_kj.tanggal).format("MMMM YYYY");
-      active_kj.id =
-         dayjs(active_kj.tanggal).format("YYYY-MM-DD-") +
-         generateRandomString(5);
+      if (active_kj.id) {
 
-      db.kj.put(active_kj);
+         db.kj.put(active_kj);
+
+      } else {
+         active_kj.id =
+            dayjs(active_kj.tanggal).format("YYYY-MM-DD-") +
+            generateRandomString(5);
+
+         db.kj.add(active_kj);
+      }
 
       Log("kj", active_kj);
 
-      editkjModal = false;
+      editmtModal = false;
 
-      Loadkj();
+      Loadmt();
    }
 
    pubsub.subscribe("kj", () => {
-      Loadkj();
+      Loadmt();
    });
 </script>
 
@@ -47,10 +52,10 @@
  -->
    <div class="max-w-7xl mx-auto">
       <div class="flex flex-col md:flex-row gap-3 md:justify-between">
-         <div class="text-xl md:text-3xl">kj</div>
+         <div class="text-xl md:text-3xl">KJ</div>
          <button
             on:click={() => {
-               editkjModal = true;
+               editmtModal = true;
                active_kj = {
                   tanggal: dayjs().format("YYYY-MM-DD"),
                };
@@ -74,6 +79,9 @@
                         Tanggal
                      </th>
                      <th class="text-left px-4 py-2 font-medium text-gray-900">
+                        Masjid
+                     </th>
+                     <th class="text-left px-4 py-2 font-medium text-gray-900">
                         Pembicara
                      </th>
                      <th class="text-left px-4 py-2 font-medium text-gray-900">
@@ -86,13 +94,16 @@
                   {#each kj as item}
                      <tr>
                         <td class="whitespace-nowrap px-4 py-2 text-gray-700"
+                           >{item.bulan || "-"}</td
+                        >
+                        <td class="whitespace-nowrap px-4 py-2 text-gray-700"
                            >{item.tanggal || "-"}</td
                         >
                         <td class="whitespace-nowrap px-4 py-2 text-gray-700"
-                           >{item.pembicara || "-"}</td
-                        >
+                        >{item.masjid || "-"}</td
+                     >
                         <td class="whitespace-nowrap px-4 py-2 text-gray-700"
-                           >{item.masjid || "-"}</td
+                           >{item.pembicara || "-"}</td
                         >
                         <td class="whitespace-nowrap px-4 py-2 text-gray-700">
                            {item.peserta || "-"}</td
@@ -102,7 +113,7 @@
                               type="button"
                               on:click={() => {
                                  active_kj = item;
-                                 editkjModal = true;
+                                 editmtModal = true;
                               }}
                               class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                               >Edit</button
@@ -121,8 +132,8 @@
    </div>
 </div>
 
-<Modal width="max-w-lg" bind:show={editkjModal} title="Edit kj">
-   <form on:submit|preventDefault={savekj} class="p-4 space-y-4">
+<Modal width="max-w-lg" bind:show={editmtModal} title="Edit kj">
+   <form on:submit|preventDefault={savemt} class="p-4 space-y-4">
       <div class="space-y-1">
          <label for="tanggal" class="font-medium">Tanggal</label>
          <input
@@ -131,6 +142,18 @@
             class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
             type="date"
             id="tanggal"
+         />
+      </div>
+      
+      <div class="space-y-1">
+         <label for="masjid" class="font-medium">Masjid</label>
+         <input
+            required
+            bind:value={active_kj.masjid}
+            class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
+            type="text"
+            id="masjid"
+            placeholder="Tuliskan nama masjid"
          />
       </div>
       <div class="space-y-1">
@@ -144,17 +167,6 @@
             placeholder="Tuliskan nama pembicara"
          />
       </div>
-      <div class="space-y-1">
-        <label for="masjid" class="font-medium">Masjid</label>
-        <input
-           required
-           bind:value={active_kj.masjid}
-           class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
-           type="text"
-           id="masjid"
-           placeholder="Tuliskan nama masjid"
-        />
-     </div>
       <div class="space-y-1">
          <label for="note" class="font-medium">Catatan</label>
          <textarea

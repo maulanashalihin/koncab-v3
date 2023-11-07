@@ -26,10 +26,7 @@
 
       guru = await db.peserta.orderBy("name").toArray();
 
-      list_contacts = await db.kontak
-         .where("status")
-         .equals("Sukses")
-         .toArray();
+      list_contacts = await db.im.toArray();
       list_contacts = list_contacts.filter((item) => {
          return !hp.find((hp) => hp.name == item.name);
       });
@@ -63,23 +60,6 @@
             Loadhp();
             return;
          }
-         if (active_hp.createdAt == undefined) {
-            active_hp.createdAt = dayjs().format("YYYY-MM-DD");
-         }
-         active_hp.updatedAt = dayjs().format("YYYY-MM-DD");
-
-         db.hp.put(active_hp);
-
-         if (action == "IM ke CP") {
-            const upgrade_data = {
-               id: generateUUID(),
-               name: active_hp.name,
-               status: action,
-               createdAt: dayjs().format("YYYY-MM-DD"),
-            };
-            db.upgrade.put(upgrade_data);
-            Log("upgrade", upgrade_data);
-         }
 
          if (action == "HP ke P") {
             const upgrade_data = {
@@ -100,13 +80,29 @@
             };
             db.peserta.put(new_Peserta);
             Log("peserta", new_Peserta);
+
+            db.hp.delete(active_hp.id);
+            Log("hp", active_hp, "delete");
+
+            edithpModal = false;
+
+            Loadhp();
+
+            return;
          }
+
+         if (active_hp.createdAt == undefined) {
+            active_hp.createdAt = dayjs().format("YYYY-MM-DD");
+         }
+         active_hp.updatedAt = dayjs().format("YYYY-MM-DD");
+
+         db.hp.put(active_hp);
       } else {
          active_hp.id = active_hp.name;
          active_hp.createdAt = dayjs().format("YYYY-MM-DD");
          db.hp.add(active_hp);
 
-         if (action == "IM Baru") {
+         if (action == "HP Baru") {
             const upgrade_data = {
                id: generateUUID(),
                name: active_hp.name,
@@ -116,6 +112,15 @@
             db.upgrade.put(upgrade_data);
 
             Log("upgrade", upgrade_data);
+
+            db.im.delete(active_hp.name);
+            Log(
+               "im",
+               {
+                  id: active_hp.name,
+               },
+               "delete"
+            );
          }
       }
       Log("hp", active_hp);
@@ -159,10 +164,10 @@
          <button
             on:click={() => {
                edithpModal = true;
-               action = "hp Baru";
+               action = "HP Baru";
                active_hp = {
                   name: "",
-                  status: "IM",
+                  status: "HP",
                   pertemuan: 0,
                   guru: "",
                   note: "",
@@ -236,7 +241,7 @@
                            {item.note}</td
                         >
                         <td class="whitespace-nowrap px-4 py-2 text-gray-700">
-                           {#if item.status == "IM" || item.status == "HP"}
+                           {#if item.status == "HP"}
                               <button
                                  type="button"
                                  on:click={() => {
@@ -249,23 +254,7 @@
                                  >Edit</button
                               >
                            {/if}
-                           {#if item.status == "IM"}
-                              <button
-                                 type="button"
-                                 on:click={() => {
-                                    active_hp = JSON.parse(
-                                       JSON.stringify(item)
-                                    );
-                                    is_mundur = false;
-                                    active_hp.status = "HP";
-                                    active_hp.pertemuan = 0;
-                                    action = "IM ke HP";
-                                    edithpModal = true;
-                                 }}
-                                 class="bg-orange-500 hover:bg-orange-700 text-white font-bold py-1 px-2 rounded"
-                                 >Upgrade ke HP</button
-                              >
-                           {/if}
+
                            {#if item.status == "HP"}
                               <button
                                  type="button"
@@ -316,9 +305,7 @@
                id="name"
             >
                <option disabled value=""
-                  >{list_contacts.length
-                     ? "Pilih Kontakan"
-                     : "Tidak ada Kontakan"}</option
+                  >{list_contacts.length ? "Pilih IM" : "Tidak ada IM"}</option
                >
                {#each list_contacts as item}
                   <option value={item.name}>{item.name}</option>
