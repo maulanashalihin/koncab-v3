@@ -131,6 +131,8 @@
          ":" +
          active_group.id;
 
+     
+
       selected_peserta = peserta.filter((i) => i.group_id == active_group.id);
 
       presence_week = await db.presence_week.get(id);
@@ -149,9 +151,11 @@
          presence_week.tanggal = tanggal;
          presence_week.id = id;
       }
+      
 
       presences = [];
       presences = await db.presences.where({ week_id: id }).toArray();
+ 
 
       if (presences.length < selected_peserta.length) {
          for await (let item of selected_peserta) {
@@ -159,7 +163,7 @@
 
             if (!presence) {
                const presence_data = {
-                  id: presence_week.id + ":" + item.group_id + ":" + item.id,
+                  id: id +  ":" + item.id,
                   week_id: presence_week.id,
                   group_id: active_group.id,
                   peserta_id: item.id,
@@ -236,31 +240,11 @@
       Log("presence_week", presence_week);
 
       for await (let item of presences) {
-         const presence_data = {
-            id: presence_week.id + ":" + item.group_id + ":" + item.id,
-            name: item.name,
-            week_id: presence_week.id,
-            group_id: active_group.id,
-            peserta_id: item.id,
-            present: item.present,
-            present_index: item.present ? 1 : 0,
-            ontime: item.ontime,
-            ontime_index: item.ontime ? 1 : 0,
-            kontrol: item.kontrol,
-            kontrol_index: item.kontrol ? 1 : 0,
-            kontak: item.kontak,
-            kontak_index: item.kontak ? 1 : 0,
-            buletin_fisik: item.buletin_fisik,
-            buletin_digital: item.buletin_digital,
-            buletin_kontak: item.buletin_kontak,
-            leaflet: item.leaflet,
-            buletin: item.buletin_fisik + item.buletin_digital,
-            tanggal: presence_week.tanggal,
-         };
+         
 
-         await db.presences.put(presence_data);
+         await db.presences.put(item);
 
-         Log("presences", presence_data);
+         Log("presences", item);
       }
       presentModal = false;
    }
@@ -518,6 +502,7 @@
                on:click={() => {
                   editGroupModal = true;
                   active_group = {};
+                  selected_peserta = [];
                }}
                class="bg-blue-500 flex gap-1 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
             >
@@ -670,7 +655,7 @@
                                           on:click={() => {
                                              active_group = item;
                                              presentModal = true;
-
+                                             selected_peserta = [];
                                              LoadPresence();
                                           }}
                                           class="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded"
@@ -833,7 +818,10 @@
          <input
             required
             bind:value={tanggal}
-            on:change={LoadPresence}
+            on:change={()=>{
+               selected_peserta = [];
+               LoadPresence()
+            }}
             class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
             type="date"
             id="date"
@@ -1000,22 +988,36 @@
                            placeholder="5"
                         /> 
                      </div>
-                       {/if}
-                        <div class="space-y-1">
-                           <label for="leaflet" class="font-medium"
-                              >Leaflet (Nasyrah)</label
-                           >
-                           <input
-                              bind:value={item.leaflet}
-                              class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
-                              type="number"
-                              id="leaflet"
-                              placeholder="5"
-                           />
-                           <div class="text-gray-500">
-                              <small>diisi jika ada penyebaran nasyrah</small>
-                           </div>
+                     <div class="space-y-1">
+                        <label for="bts" class="font-medium"
+                           >BTS</label
+                        >
+                        <input
+                           bind:value={item.bts}
+                           class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
+                           type="number"
+                           id="bts"
+                           placeholder="5"
+                        /> 
+                     </div>
+                     {:else}
+                     <div class="space-y-1">
+                        <label for="leaflet" class="font-medium"
+                           >Leaflet (Nasyrah)</label
+                        >
+                        <input
+                           bind:value={item.leaflet}
+                           class="bg-gray-50 border border-gray-300 outline-none text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5 placeholder-gray-400"
+                           type="number"
+                           id="leaflet"
+                           placeholder="5"
+                        />
+                        <div class="text-gray-500">
+                           <small>diisi jika ada penyebaran nasyrah</small>
                         </div>
+                     </div>
+                       {/if}
+                        
                      </div>
                   </div>
                {/each}

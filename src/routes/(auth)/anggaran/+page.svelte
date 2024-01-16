@@ -2,8 +2,7 @@
     import Modal from "../../../Components/Modal.svelte";
     import dayjs from "dayjs";
     import { Log, db, pubsub } from "../../../Database/schema";
-    import "dayjs/locale/id";
-    dayjs.locale("id");
+ 
  
     let peserta = [];
  

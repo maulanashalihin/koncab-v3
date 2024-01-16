@@ -41,7 +41,7 @@
       Loadupgrade();
    });
 
-   function deleteUpgrade()
+   function deleteIA()
    {
       db.ia.delete(active_upgrade.id);
       editupgradeModal = false;
@@ -182,8 +182,8 @@
       >
          Simpan
       </button>
-      <button on:click="{deleteUpgrade}" type="button" class="bg-red-50 w-full text-red-500 text-sm px-3 py-2">
-         Hapus Upgrade
+      <button on:click="{deleteIA}" type="button" class="bg-red-50 w-full text-red-500 text-sm px-3 py-2">
+         Hapus Data
       </button>
    </form>
 </Modal>

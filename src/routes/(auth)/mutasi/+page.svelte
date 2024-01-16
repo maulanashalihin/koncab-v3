@@ -24,6 +24,7 @@
          )
          .reverse()
          .sortBy("createdAt");
+         console.log(mutasi)
       peserta = await db.peserta.toArray();
    }
 
@@ -32,17 +33,24 @@
    let editmutasiModal = false;
 
    async function savemutasi() {
-      if (active_mutasi.id) {
-         await db.mutasi.put(active_mutasi);
-      } else {
+
+      const check = await db.peserta.where("name").equals(active_mutasi.name).first();
+
+      if(check && active_mutasi.status == "Masuk")
+      {
+         alert(  `Nama ${check.name} sudah digunakan`);
+         return;
+      }
+
          active_mutasi.id = generateUUID();
          active_mutasi.createdAt = dayjs().format("YYYY-MM-DD");
+         active_mutasi.keanggotaan = status;
 
          await db.mutasi.add(active_mutasi);
 
          if (active_mutasi.status == "Masuk") {
             await db.peserta.add({
-               id: active_mutasi.id,
+               id: active_mutasi.name,
                status: status,
                name: active_mutasi.name,
                createdAt: dayjs().format("YYYY-MM-DD"),
@@ -65,8 +73,31 @@
                },
                "delete"
             );
+
+            if(active_mutasi.status == "Berhenti")
+            {
+               const ia_data = {
+                  id: generateUUID(),
+                  name: active_mutasi.name,
+                  status: "IA dari " + status,
+                  createdAt: dayjs().format("YYYY-MM-DD"),
+               };
+
+
+               await db.ia.add(ia_data);
+               
+               Log(
+                  "ia",
+                  {
+                     id: active_mutasi.id,
+                     status: status,
+                     name: active_mutasi.name,
+                     createdAt: dayjs().format("YYYY-MM-DD"),
+                  },
+                  "delete"
+               );
+            }
          }
-      }
       Log("mutasi", active_mutasi);
       editmutasiModal = false;
 
@@ -147,7 +178,7 @@
                         Tanggal
                      </th>
                      <th class="text-left px-4 py-2 font-medium text-gray-900">
-                        Name
+                        Name 
                      </th>
                      <th class="text-left px-4 py-2 font-medium text-gray-900">
                         Status
@@ -168,7 +199,7 @@
                         <td
                            class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"
                         >
-                           {item.name}
+                           {item.name} ({item.keanggotaan})
                         </td>
                         <td class="whitespace-nowrap px-4 py-2 text-gray-700"
                            >{item.status}</td

@@ -117,7 +117,7 @@
  -->
    <div class="max-w-7xl mx-auto">
       <div class="flex flex-col md:flex-row gap-3 md:justify-between">
-         <div class="text-xl md:text-3xl">im</div>
+         <div class="text-xl md:text-3xl">IM</div>
          <button
             on:click={() => {
                editkontakModal = true;

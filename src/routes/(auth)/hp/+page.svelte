@@ -1,7 +1,7 @@
 <script>
    import { stringify } from "postcss";
    import Modal from "../../../Components/Modal.svelte";
-   import { generateUUID } from "../../../Components/helper";
+   import { generateUUID, jumlah_kelompok_hp } from "../../../Components/helper";
    import { Log, db, pubsub } from "../../../Database/schema";
    import dayjs from "dayjs";
 
@@ -17,12 +17,17 @@
 
    let is_mundur = false;
 
+   let total_kelompok = 0;
+ 
+
    let action = "";
 
    async function Loadhp() {
       hp = await db.hp.reverse().sortBy("createdAt");
 
       clone_hp = hp;
+
+      total_kelompok = jumlah_kelompok_hp(clone_hp)
 
       guru = await db.peserta.orderBy("name").toArray();
 
@@ -160,7 +165,12 @@
   -->
    <div class="">
       <div class="flex flex-col md:flex-row gap-3 md:justify-between">
+        <div>
          <div class="text-xl md:text-3xl">HP</div>
+         <div class="text-gray-500">
+            Total Kelompok : {total_kelompok}
+         </div>
+        </div>
          <button
             on:click={() => {
                edithpModal = true;

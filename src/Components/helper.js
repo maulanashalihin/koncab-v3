@@ -73,7 +73,7 @@ export function isJsonString(str) {
   }
   return true;
 }
- 
+
 export function generateRandomString(length) {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let result = '';
@@ -94,14 +94,14 @@ export const User = writable(null);
 
 export let MediaPrice = {
   Jawa: {
-     tabloid: 10000,
-     majalah: 10000,
-     buletin: 500,
+    tabloid: 10000,
+    majalah: 10000,
+    buletin: 500,
   },
   "Luar Jawa": {
-     tabloid: 17000,
-     majalah: 14000,
-     buletin: 500,
+    tabloid: 17000,
+    majalah: 14000,
+    buletin: 500,
   },
 };
 
@@ -115,4 +115,20 @@ export function dataToJSON(data) {
   });
 
   return jsonArr
+}
+
+export function jumlah_kelompok_hp(hp_data){
+  
+  let guru_kelompok = {};
+
+  hp_data.forEach(item => {
+    if (guru_kelompok[`${item.hari} ${item.jam} ${item.guru}`] == undefined) {
+      guru_kelompok[`${item.hari} ${item.jam} ${item.guru}`] = 1;
+    }
+    else {
+      guru_kelompok[`${item.hari} ${item.jam} ${item.guru}`] += 1;
+    }
+  })
+
+  return Object.keys(guru_kelompok).length;
 }

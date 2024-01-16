@@ -39,6 +39,12 @@
                     title: "HP",
                     show : website.User == "Nisa"
                 },
+
+                {
+                    path: "/im",
+                    title: "IM",
+                    show : website.User == "Nisa"
+                },
                 {
                     path: "/ia",
                     title: "IA",
@@ -95,11 +101,6 @@
         {
             title: "Rekrutmen",
             submenu: [
-                {
-                    path: "/im",
-                    title: "IM",
-                    show : website.User == "Nisa"
-                },
                 {
                     path: "/kontak",
                     title: "Kontak",
@@ -169,7 +170,11 @@
                 {
                     path: "/laporan",
                     title: "Laporan",
-                    show : true
+                    show : website.User == "Rijal"
+                }, {
+                    path: "/laporan-nisa",
+                    title: "Laporan",
+                    show : website.User == "Nisa"
                 },
             ],
         },
